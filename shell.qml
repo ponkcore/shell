@@ -7,16 +7,15 @@
 import "modules"
 import "modules/drawers"
 import "modules/background"
+import "modules/lock"
 import "modules/areapicker"
 import QtQuick
 import Quickshell
 import qs.services
 
-// Phase 3a: Background is re-enabled — Caelestia now owns wallpaper.
-// Lock and IdleMonitors remain disabled — hyprlock and hypridle
-// are still the active owners. These will be re-enabled at their
-// respective ownership cutover phases.
-// See ARCHITECTURE_SPLIT.md §11 Phase 3.
+// Phase 3e: Lock and IdleMonitors are now enabled — Caelestia
+// owns the lock/idle path. hyprlock and hypridle are disabled
+// in the NixOS config. See ARCHITECTURE_SPLIT.md §11 Phase 3.
 
 ShellRoot {
     id: root
@@ -34,6 +33,14 @@ ShellRoot {
     Background {}
     Drawers {}
     AreaPicker {}
+
+    Lock {
+        id: lock
+    }
+
+    IdleMonitors {
+        lock: lock
+    }
 
     ConfigToasts {}
     Shortcuts {}
