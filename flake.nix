@@ -36,7 +36,7 @@
     packages = forAllSystems (pkgs: rec {
       caelestia-shell = pkgs.callPackage ./nix {
         inherit (inputs) m3shapes;
-        rev = self.rev or self.dirtyRev;
+        rev = self.rev or self.dirtyRev or "unknown";
         stdenv = pkgs.clangStdenv;
         quickshell = inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default.override {
           withX11 = false;
