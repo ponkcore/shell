@@ -6,15 +6,16 @@
 
 import "modules"
 import "modules/drawers"
+import "modules/background"
 import "modules/areapicker"
 import QtQuick
 import Quickshell
 import qs.services
 
-// Phase 2 gate: Background, Lock, and IdleMonitors are disabled
-// because hyprpaper, hyprlock, and hypridle are still the active
-// owners of wallpaper, lock, and idle management. These modules
-// will be re-enabled at their respective ownership cutover phases.
+// Phase 3a: Background is re-enabled — Caelestia now owns wallpaper.
+// Lock and IdleMonitors remain disabled — hyprlock and hypridle
+// are still the active owners. These will be re-enabled at their
+// respective ownership cutover phases.
 // See ARCHITECTURE_SPLIT.md §11 Phase 3.
 
 ShellRoot {
@@ -30,6 +31,7 @@ ShellRoot {
 
     GSFLoader {}
 
+    Background {}
     Drawers {}
     AreaPicker {}
 
