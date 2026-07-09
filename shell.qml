@@ -45,4 +45,15 @@ ShellRoot {
     ConfigToasts {}
     Shortcuts {}
     BatteryMonitor {}
+
+    // Force instantiation of Lecoo bridge singletons so they read
+    // initial state at shell startup, not lazily on first UI access.
+    // Without this, singletons that no loaded component references
+    // directly would never start. See CRITICAL LESSONS #7.
+    QtObject {
+        property bool lecooPowerReady: LecooPower.available
+        property string lecooPowerMode: LecooPower.currentMode
+        property bool lecooChargeReady: LecooCharge.available
+        property string lecooChargeMode: LecooCharge.currentMode
+    }
 }

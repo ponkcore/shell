@@ -13,7 +13,9 @@ Item {
     required property BarPopouts.Wrapper popouts
     required property matrix4x4 deformMatrix
 
-    readonly property real nonAnimHeight: idleInhibit.nonAnimHeight + record.nonAnimHeight + toggles.implicitHeight + layout.spacing * 2
+    // Order per user spec: IdleInhibit, Quick Toggles, Charge Limit,
+    // Recordings. Charge-limit row sits between toggles and recordings.
+    readonly property real nonAnimHeight: idleInhibit.nonAnimHeight + toggles.implicitHeight + chargeLimit.nonAnimHeight + record.nonAnimHeight + layout.spacing * 3
 
     implicitWidth: layout.implicitWidth
     implicitHeight: layout.implicitHeight
@@ -30,6 +32,21 @@ Item {
             objectName: "utilitiesKeepAwake"
         }
 
+        Toggles {
+            id: toggles
+
+            objectName: "utilitiesQuickToggles"
+
+            screenState: root.screenState
+            popouts: root.popouts
+        }
+
+        ChargeLimit {
+            id: chargeLimit
+
+            objectName: "utilitiesChargeLimit"
+        }
+
         Record {
             id: record
 
@@ -38,15 +55,6 @@ Item {
             props: root.props
             screenState: root.screenState
             z: 1
-        }
-
-        Toggles {
-            id: toggles
-
-            objectName: "utilitiesQuickToggles"
-
-            screenState: root.screenState
-            popouts: root.popouts
         }
     }
 

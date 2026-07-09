@@ -243,11 +243,12 @@ StyledRect {
                 animate: true
                 text: {
                     if (!UPower.displayDevice.isLaptopBattery) {
-                        if (PowerProfiles.profile === PowerProfile.PowerSaver)
-                            return "energy_savings_leaf";
-                        if (PowerProfiles.profile === PowerProfile.Performance)
-                            return "rocket_launch";
-                        return "balance";
+                        if (LecooPower.available) {
+                            const icon = LecooPower.modeInfo[LecooPower.currentMode]?.icon
+                            if (icon)
+                                return icon
+                        }
+                        return "balance"
                     }
                     return Icons.getBatteryIcon(UPower.displayDevice.percentage, [UPowerDeviceState.Charging, UPowerDeviceState.FullyCharged, UPowerDeviceState.PendingCharge].includes(UPower.displayDevice.state));
                 }
