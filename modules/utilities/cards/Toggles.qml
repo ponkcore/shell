@@ -28,8 +28,9 @@ StyledRect {
                 return false;
             }
 
-            if (item.id === "vpn") {
-                return GlobalConfig.utilities.vpn.provider.some(p => typeof p === "object" ? (p.enabled === true) : false);
+            // VPN and GameMode toggles are disabled in this fork.
+            if (item.id === "vpn" || item.id === "gameMode") {
+                return false;
             }
 
             seenIds.add(item.id);
@@ -123,31 +124,13 @@ StyledRect {
                         }
                     }
                 }
-                DelegateChoice {
-                    roleValue: "gameMode"
-                    delegate: Toggle {
-                        icon: "gamepad"
-                        checked: GameMode.enabled
-                        onClicked: GameMode.enabled = !GameMode.enabled
-                    }
-                }
+                // GameMode and VPN toggles removed in this fork.
                 DelegateChoice {
                     roleValue: "dnd"
                     delegate: Toggle {
                         icon: "notifications_off"
                         checked: Notifs.dnd
                         onClicked: Notifs.dnd = !Notifs.dnd
-                    }
-                }
-                DelegateChoice {
-                    roleValue: "vpn"
-                    delegate: Toggle {
-                        icon: "vpn_key"
-                        checked: VPN.connected && VPN.status.state !== "needs-auth" && VPN.status.state !== "error"
-                        enabled: !VPN.connecting
-                        isToggle: VPN.status.state !== "needs-auth" && VPN.status.state !== "error"
-                        inactiveOnColour: Colours.palette.m3onSurfaceVariant
-                        onClicked: VPN.toggle()
                     }
                 }
             }

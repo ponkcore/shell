@@ -134,12 +134,6 @@ PageBase {
         }
 
         ToggleRow {
-            text: qsTr("Game mode changes")
-            checked: GlobalConfig.utilities.toasts.gameModeChanged
-            onToggled: GlobalConfig.utilities.toasts.gameModeChanged = checked
-        }
-
-        ToggleRow {
             text: qsTr("Do not disturb changes")
             checked: GlobalConfig.utilities.toasts.dndChanged
             onToggled: GlobalConfig.utilities.toasts.dndChanged = checked
@@ -173,12 +167,6 @@ PageBase {
             text: qsTr("Keyboard layout changes")
             checked: GlobalConfig.utilities.toasts.kbLayoutChanged
             onToggled: GlobalConfig.utilities.toasts.kbLayoutChanged = checked
-        }
-
-        ToggleRow {
-            text: qsTr("VPN changes")
-            checked: GlobalConfig.utilities.toasts.vpnChanged
-            onToggled: GlobalConfig.utilities.toasts.vpnChanged = checked
         }
 
         ToggleRow {
