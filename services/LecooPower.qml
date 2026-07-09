@@ -90,4 +90,15 @@ Singleton {
         interval: 600
         onTriggered: root.refresh()
     }
+
+    // Periodic refresh to catch external state changes (AC-edge
+    // transitions, CLI switches). Runs every 5 seconds.
+    Timer {
+        id: pollTimer
+
+        interval: 5000
+        repeat: true
+        running: root.available
+        onTriggered: root.refresh()
+    }
 }
