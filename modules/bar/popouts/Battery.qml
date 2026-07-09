@@ -42,70 +42,21 @@ Column {
     StyledRect {
         id: profiles
 
-        property string current: LecooPower.available ? LecooPower.currentMode : "balanced"
-
         anchors.horizontalCenter: parent.horizontalCenter
 
-        implicitWidth: {
-            let w = 0
-            for (let i = 0; i < modeRepeater.count; i++)
-                w += modeRepeater.itemAt(i).implicitWidth
-            w += Tokens.spacing.largeIncreased * (modeRepeater.count - 1) + Tokens.padding.medium * 2
-            return w
-        }
-        implicitHeight: modeRepeater.count > 0 ? modeRepeater.itemAt(0).implicitHeight + Tokens.padding.small : 0
+        implicitWidth: modeRow.implicitWidth + Tokens.padding.medium * 2
+        implicitHeight: modeRow.implicitHeight + Tokens.padding.small
 
         color: Colours.tPalette.m3surfaceContainer
         radius: Tokens.rounding.full
 
         visible: LecooPower.available
 
-        StyledRect {
-            id: indicator
-
-            color: Colours.palette.m3primary
-            radius: Tokens.rounding.full
-
-            x: {
-                const item = modeRepeater.itemAt(indicator.currentIndex)
-                return item ? item.x : 0
-            }
-            y: {
-                const item = modeRepeater.itemAt(indicator.currentIndex)
-                return item ? item.y : 0
-            }
-            width: {
-                const item = modeRepeater.itemAt(indicator.currentIndex)
-                return item ? item.width : 0
-            }
-            height: {
-                const item = modeRepeater.itemAt(indicator.currentIndex)
-                return item ? item.height : 0
-            }
-
-            property int currentIndex: {
-                const modes = LecooPower.modes
-                for (let i = 0; i < modes.length; i++) {
-                    if (modes[i] === profiles.current)
-                        return i
-                }
-                return 1 // fallback to eco
-            }
-
-            Behavior on x { Anim { type: Anim.DefaultSpatial } }
-            Behavior on y { Anim { type: Anim.DefaultSpatial } }
-            Behavior on width { Anim { type: Anim.DefaultSpatial } }
-            Behavior on height { Anim { type: Anim.DefaultSpatial } }
-        }
-
         Row {
             id: modeRow
 
             anchors.verticalCenter: parent.verticalCenter
-            anchors.left: parent.left
-            anchors.leftMargin: Tokens.padding.medium
-            anchors.right: parent.right
-            anchors.rightMargin: Tokens.padding.medium
+            anchors.horizontalCenter: parent.horizontalCenter
             spacing: Tokens.spacing.largeIncreased
 
             Repeater {
@@ -115,14 +66,28 @@ Column {
 
                 delegate: Item {
                     required property string modelData
-                    required property int index
 
                     implicitWidth: modeIcon.implicitWidth + Tokens.padding.small
                     implicitHeight: modeIcon.implicitHeight + Tokens.padding.small
 
-                    StateLayer {
+                    readonly property bool isActive: profiles.visible && LecooPower.currentMode === modelData
+
+                    StyledRect {
+                        anchors.fill: parent
+                        color: parent.isActive ? Colours.palette.m3primary : "transparent"
                         radius: Tokens.rounding.full
-                        color: profiles.current === parent.modelData ? Colours.palette.m3onPrimary : Colours.palette.m3onSurface
+
+                        Behavior on color {
+                            Anim {
+                                type: Anim.DefaultEffects
+                            }
+                        }
+                    }
+
+                    StateLayer {
+                        anchors.fill: parent
+                        radius: Tokens.rounding.full
+                        color: parent.isActive ? Colours.palette.m3onPrimary : Colours.palette.m3onSurface
                         onClicked: LecooPower.setMode(parent.modelData)
                     }
 
@@ -132,8 +97,8 @@ Column {
                         anchors.centerIn: parent
 
                         text: LecooPower.modeInfo[parent.modelData]?.icon ?? "help"
-                        color: profiles.current === parent.modelData ? Colours.palette.m3onPrimary : Colours.palette.m3onSurfaceVariant
-                        fill: profiles.current === parent.modelData ? 1 : 0
+                        color: parent.isActive ? Colours.palette.m3onPrimary : Colours.palette.m3onSurfaceVariant
+                        fill: parent.isActive ? 1 : 0
                         fontStyle: Tokens.font.icon.large
 
                         Behavior on fill {
