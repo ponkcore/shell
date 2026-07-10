@@ -86,6 +86,10 @@ StyledRect {
 
                     fillWidth: true
                     isToggle: true
+                    isRound: true
+                    shapeMorph: true
+                    inactiveColour: Colours.layer(Colours.palette.m3surfaceContainerHighest, 2)
+                    inactiveOnColour: Colours.palette.m3onSurfaceVariant
                     checked: LecooCharge.currentMode === modelData
                     text: LecooCharge.modeInfo[modelData]?.label ?? modelData
                     onClicked: LecooCharge.setMode(modelData)
