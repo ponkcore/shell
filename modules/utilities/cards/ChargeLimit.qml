@@ -41,14 +41,14 @@ StyledRect {
                 implicitHeight: icon.implicitHeight + Tokens.padding.large
 
                 radius: Tokens.rounding.full
-                color: Colours.palette.m3tertiaryContainer
+                color: Colours.palette.m3secondaryContainer
 
                 MaterialIcon {
                     id: icon
 
                     anchors.centerIn: parent
                     text: "battery_charging_full"
-                    color: Colours.palette.m3onTertiaryContainer
+                    color: Colours.palette.m3onSecondaryContainer
                     fontStyle: Tokens.font.icon.large
                 }
             }
