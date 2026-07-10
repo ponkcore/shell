@@ -47,7 +47,7 @@ StyledRect {
                     id: icon
 
                     anchors.centerIn: parent
-                    text: "battery_lock"
+                    text: "battery_charging_full"
                     color: Colours.palette.m3onTertiaryContainer
                     fontStyle: Tokens.font.icon.large
                 }

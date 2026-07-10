@@ -37,76 +37,161 @@ Column {
     }
 
     // Lecoo power-mode selector — 4 modes with eco+ leftmost.
-    // Replaces the upstream 3-mode PowerProfiles selector.
+    // Uses the upstream sliding-indicator pattern with AnchorChanges.
     // Bridge: LecooPower singleton → lecoo-power-mode get/set.
     StyledRect {
         id: profiles
 
+        property string currentIcon: {
+            const mode = LecooPower.currentMode;
+            if (mode === "eco+")
+                return "battery_saver";
+            if (mode === "eco")
+                return "energy_savings_leaf";
+            if (mode === "balanced")
+                return "balance";
+            if (mode === "performance")
+                return "rocket_launch";
+            return "";
+        }
+
         anchors.horizontalCenter: parent.horizontalCenter
 
-        implicitWidth: modeRow.implicitWidth + Tokens.padding.medium * 2
-        implicitHeight: modeRow.implicitHeight + Tokens.padding.small
+        implicitWidth: ecoPlusItem.implicitWidth + ecoItem.implicitWidth + balancedItem.implicitWidth + perfItem.implicitWidth + Tokens.padding.extraSmall * 2 + Tokens.spacing.largeIncreased * 3
+        implicitHeight: Math.max(ecoPlusItem.implicitHeight, ecoItem.implicitHeight, balancedItem.implicitHeight, perfItem.implicitHeight) + Tokens.padding.small
 
         color: Colours.tPalette.m3surfaceContainer
         radius: Tokens.rounding.full
 
         visible: LecooPower.available
 
-        Row {
-            id: modeRow
+        StyledRect {
+            id: indicator
+
+            color: Colours.palette.m3primary
+            radius: Tokens.rounding.full
+            state: profiles.currentIcon
+
+            states: [
+                State {
+                    name: "battery_saver"
+
+                    Fill {
+                        item: ecoPlusItem
+                    }
+                },
+                State {
+                    name: "energy_savings_leaf"
+
+                    Fill {
+                        item: ecoItem
+                    }
+                },
+                State {
+                    name: "balance"
+
+                    Fill {
+                        item: balancedItem
+                    }
+                },
+                State {
+                    name: "rocket_launch"
+
+                    Fill {
+                        item: perfItem
+                    }
+                }
+            ]
+
+            transitions: Transition {
+                AnchorAnim {}
+            }
+        }
+
+        Profile {
+            id: ecoPlusItem
 
             anchors.verticalCenter: parent.verticalCenter
-            anchors.horizontalCenter: parent.horizontalCenter
-            spacing: Tokens.spacing.largeIncreased
+            anchors.left: parent.left
+            anchors.leftMargin: Tokens.padding.extraSmall
 
-            Repeater {
-                id: modeRepeater
+            mode: "eco+"
+            icon: "battery_saver"
+        }
 
-                model: LecooPower.modes
+        Profile {
+            id: ecoItem
 
-                delegate: Item {
-                    required property string modelData
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: ecoPlusItem.right
+            anchors.leftMargin: Tokens.spacing.largeIncreased
 
-                    implicitWidth: modeIcon.implicitWidth + Tokens.padding.small
-                    implicitHeight: modeIcon.implicitHeight + Tokens.padding.small
+            mode: "eco"
+            icon: "energy_savings_leaf"
+        }
 
-                    readonly property bool isActive: profiles.visible && LecooPower.currentMode === modelData
+        Profile {
+            id: balancedItem
 
-                    StyledRect {
-                        anchors.fill: parent
-                        color: parent.isActive ? Colours.palette.m3primary : "transparent"
-                        radius: Tokens.rounding.full
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: ecoItem.right
+            anchors.leftMargin: Tokens.spacing.largeIncreased
 
-                        Behavior on color {
-                            Anim {
-                                type: Anim.DefaultEffects
-                            }
-                        }
-                    }
+            mode: "balanced"
+            icon: "balance"
+        }
 
-                    StateLayer {
-                        anchors.fill: parent
-                        radius: Tokens.rounding.full
-                        color: parent.isActive ? Colours.palette.m3onPrimary : Colours.palette.m3onSurface
-                        onClicked: LecooPower.setMode(parent.modelData)
-                    }
+        Profile {
+            id: perfItem
 
-                    MaterialIcon {
-                        id: modeIcon
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: parent.right
+            anchors.rightMargin: Tokens.padding.extraSmall
 
-                        anchors.centerIn: parent
+            mode: "performance"
+            icon: "rocket_launch"
+        }
+    }
 
-                        text: LecooPower.modeInfo[parent.modelData]?.icon ?? "help"
-                        color: parent.isActive ? Colours.palette.m3onPrimary : Colours.palette.m3onSurfaceVariant
-                        fill: parent.isActive ? 1 : 0
-                        fontStyle: Tokens.font.icon.large
+    component Fill: AnchorChanges {
+        required property Item item
 
-                        Behavior on fill {
-                            Anim {
-                                type: Anim.DefaultEffects
-                            }
-                        }
-                    }
+        target: indicator
+        anchors.left: item.left
+        anchors.right: item.right
+        anchors.top: item.top
+        anchors.bottom: item.bottom
+    }
+
+    component Profile: Item {
+        required property string mode
+        required property string icon
+
+        readonly property bool isActive: profiles.visible && LecooPower.currentMode === mode
+
+        implicitWidth: iconEl.implicitWidth + Tokens.padding.small
+        implicitHeight: iconEl.implicitHeight + Tokens.padding.small
+
+        StateLayer {
+            anchors.fill: parent
+            radius: Tokens.rounding.full
+            color: parent.isActive ? Colours.palette.m3onPrimary : Colours.palette.m3onSurface
+            onClicked: LecooPower.setMode(parent.mode)
+        }
+
+        MaterialIcon {
+            id: iconEl
+
+            anchors.centerIn: parent
+
+            text: parent.icon
+            color: parent.isActive ? Colours.palette.m3onPrimary : Colours.palette.m3onSurfaceVariant
+            fill: parent.isActive ? 1 : 0
+            fontStyle: Tokens.font.icon.large
+
+            Behavior on fill {
+                Anim {
+                    type: Anim.DefaultEffects
                 }
             }
         }

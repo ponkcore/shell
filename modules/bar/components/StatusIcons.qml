@@ -234,7 +234,8 @@ StyledRect {
             }
         }
 
-        // Battery icon
+        // Battery icon — always shows battery percentage/charging state.
+        // Power mode selection is in the battery popout, not the bar icon.
         WrappedLoader {
             name: "battery"
             active: Config.bar.status.showBattery
@@ -242,14 +243,8 @@ StyledRect {
             sourceComponent: MaterialIcon {
                 animate: true
                 text: {
-                    if (!UPower.displayDevice.isLaptopBattery) {
-                        if (LecooPower.available) {
-                            const icon = LecooPower.modeInfo[LecooPower.currentMode]?.icon
-                            if (icon)
-                                return icon
-                        }
-                        return "balance"
-                    }
+                    if (!UPower.displayDevice.isLaptopBattery)
+                        return "battery_full";
                     return Icons.getBatteryIcon(UPower.displayDevice.percentage, [UPowerDeviceState.Charging, UPowerDeviceState.FullyCharged, UPowerDeviceState.PendingCharge].includes(UPower.displayDevice.state));
                 }
                 color: !UPower.onBattery || UPower.displayDevice.percentage > 0.2 ? root.colour : Colours.palette.m3error
