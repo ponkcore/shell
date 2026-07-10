@@ -119,7 +119,9 @@ Singleton {
 
     onKbLayoutFullChanged: {
         if (hadKeyboard && GlobalConfig.utilities.toasts.kbLayoutChanged)
-            Toaster.toast(qsTr("Keyboard layout changed"), qsTr("Layout changed to: %1").arg(kbLayoutFull), "keyboard");
+            // 2500ms — half the default 5000ms. Layout-change toasts are
+            // transient confirmations; the user already knows they toggled.
+            Toaster.toast(qsTr("Keyboard layout changed"), qsTr("Layout changed to: %1").arg(kbLayoutFull), "keyboard", Toast.Info, 2500);
 
         hadKeyboard = !!keyboard;
     }
