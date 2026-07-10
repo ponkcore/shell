@@ -42,12 +42,15 @@ Singleton {
         statusProc.running = true
     }
 
-    // Set a new charge mode. Fire-and-forget, then refresh.
+    // Set a new charge mode. Optimistically update currentMode
+    // for instant UI feedback, then confirm via refresh after
+    // the command has had time to take effect.
     function setMode(mode: string): void {
         if (!root.available)
             return
         if (!root.modes.includes(mode))
             return
+        root.currentMode = mode
         Quickshell.execDetached(["lecoo-charge-mode", "set", mode])
         refreshTimer.start()
     }

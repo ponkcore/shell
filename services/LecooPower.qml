@@ -36,13 +36,15 @@ Singleton {
         getProc.running = true
     }
 
-    // Set a new power mode. Fire-and-forget, then refresh after
-    // a short delay so the UI reflects the new state.
+    // Set a new power mode. Optimistically update currentMode
+    // for instant UI feedback, then confirm via refresh after
+    // the command has had time to take effect.
     function setMode(mode: string): void {
         if (!root.available)
             return
         if (!root.modes.includes(mode))
             return
+        root.currentMode = mode
         Quickshell.execDetached(["lecoo-power-mode", "set", mode])
         refreshTimer.start()
     }
