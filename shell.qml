@@ -58,23 +58,17 @@ ShellRoot {
         property string lecooChargeMode: LecooCharge.currentMode
     }
 
-    // Eco+ animation kill switch. Tokens.anim.durations is the global
-    // AnimDurations object (CONFIG_GLOBAL_PROPERTY, shared across all
-    // Tokens instances via GlobalConfig). Setting scale=0 zeroes every
-    // animation duration across the shell — drawers, popouts, bar
-    // indicators, state layers, color transitions — because all
-    // Anim/AnchorAnim/CAnim components read from
-    // Tokens.anim.durations.* which multiplies by scale.
-    // No per-component changes needed. Reacts to LecooPower.currentMode
-    // changes (optimistic from UI setMode + 5s poll for external switches).
-    Item {
-        id: animScaleBridge
-        visible: false
-
-        Binding {
-            target: animScaleBridge.Tokens.anim.durations
-            property: "scale"
-            value: LecooPower.available && LecooPower.currentMode === "eco+" ? 0 : 1
-        }
+    // Eco+ animation kill switch. GlobalConfig is the Caelestia
+    // QML_SINGLETON for the config tree. GlobalConfig.appearance.anim
+    // .durations is the global AnimDurations object — all Anim/
+    // AnchorAnim/CAnim components read from it via Tokens.anim.durations.
+    // Setting scale=0 zeroes every animation duration across the shell
+    // (drawers, popouts, bar indicators, state layers, color transitions).
+    // Reacts instantly to LecooPower.currentMode changes (file watcher
+    // on the state file + optimistic UI updates).
+    Binding {
+        target: GlobalConfig.appearance.anim.durations
+        property: "scale"
+        value: LecooPower.available && LecooPower.currentMode === "eco+" ? 0 : 1
     }
 }

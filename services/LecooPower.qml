@@ -93,14 +93,17 @@ Singleton {
         onTriggered: root.refresh()
     }
 
-    // Periodic refresh to catch external state changes (AC-edge
-    // transitions, CLI switches). Runs every 5 seconds.
-    Timer {
-        id: pollTimer
+    // File watcher on the persistent state file. Fires instantly
+    // when lecoo-power-mode writes a new mode (CLI, AC-edge
+    // transitions, UI setMode). Replaces the 5s poll timer —
+    // external state changes are now reflected without delay.
+    FileView {
+        id: stateWatcher
 
-        interval: 5000
-        repeat: true
-        running: root.available
-        onTriggered: root.refresh()
+        path: "/var/lib/lecoo-power-mode/current"
+        watchChanges: true
+        printErrors: false
+        onFileChanged: root.refresh()
+        onLoadFailed: {} // file may not exist on non-Lecoo hosts
     }
 }
