@@ -33,7 +33,7 @@ Singleton {
         "high": { "label": "95%", "percent": 95 },
         "balanced": { "label": "80%", "percent": 80 },
         "lifespan": { "label": "60%", "percent": 60 },
-        "desk": { "label": "40%", "percent": 40 }
+        "desk": { "label": "50%", "percent": 50 }
     })
 
     // Refresh currentMode and currentPercent by calling
