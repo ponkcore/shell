@@ -77,8 +77,10 @@ Item {
         anchors.left: parent.left
         anchors.margins: Tokens.padding.large
 
-        asynchronous: true
-        active: root.shouldBeActive || root.visible
+        // Utilities content determines the drawer's implicit height. Keep it
+        // loaded before the first hover so the opening animation never starts
+        // from a zero-height asynchronous Loader.
+        active: true
 
         sourceComponent: Content {
             implicitWidth: root.implicitWidth - root.totalPadding
