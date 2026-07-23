@@ -22,7 +22,10 @@ Item {
         radius: Tokens.rounding.large
         onClicked: {
             Apps.launch(root.modelData);
-            root.screenState.launcher = false;
+            // Apps.launch may enter the CloakBrowser picker instead of
+            // launching; then the launcher stays open.
+            if (!CloakProfiles.pickerActive)
+                root.screenState.launcher = false;
         }
     }
 

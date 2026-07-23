@@ -61,9 +61,17 @@ Item {
         placeholderText: qsTr("Type \"%1\" for commands").arg(GlobalConfig.launcher.actionPrefix)
 
         onAccepted: {
+            // Create name entry works regardless of list contents: the text is
+            // the new profile name, and the list may legitimately be empty.
+            if (CloakProfiles.isCreateMode() && CloakProfiles.createName.length === 0) {
+                CloakProfiles.acceptCreate(text, list.currentList);
+                return;
+            }
             const currentItem = list.currentList?.currentItem;
             if (currentItem) {
-                if (list.showWallpapers) {
+                if (CloakProfiles.pickerActive) {
+                    CloakProfiles.activate(currentItem.modelData, list.currentList);
+                } else if (list.showWallpapers) {
                     if (Colours.scheme === "dynamic" && currentItem.modelData.path !== Wallpapers.actualCurrent)
                         Wallpapers.previewColourLock = true;
                     Wallpapers.setWallpaper(currentItem.modelData.path);
@@ -75,7 +83,8 @@ Item {
                         currentItem.modelData.onClicked(list.currentList);
                 } else {
                     Apps.launch(currentItem.modelData);
-                    root.screenState.launcher = false;
+                    if (!CloakProfiles.pickerActive)
+                        root.screenState.launcher = false;
                 }
             }
         }
@@ -83,9 +92,23 @@ Item {
         Keys.onUpPressed: list.currentList?.decrementCurrentIndex()
         Keys.onDownPressed: list.currentList?.incrementCurrentIndex()
 
-        Keys.onEscapePressed: root.screenState.launcher = false
+        Keys.onEscapePressed: {
+            if (CloakProfiles.pickerActive) {
+                search.text = "";
+                CloakProfiles.stopPicker();
+            } else {
+                root.screenState.launcher = false;
+            }
+        }
 
         Keys.onPressed: event => {
+            // Backspace on an empty search field leaves the picker.
+            if (CloakProfiles.pickerActive && search.text.length === 0 && event.key === Qt.Key_Backspace) {
+                CloakProfiles.stopPicker();
+                event.accepted = true;
+                return;
+            }
+
             if (!GlobalConfig.launcher.vimKeybinds)
                 return;
 
@@ -106,12 +129,25 @@ Item {
             }
         }
 
-        Component.onCompleted: forceActiveFocus()
+        Component.onCompleted: {
+            forceActiveFocus();
+            // Apply a search requested while this launcher instance was closed
+            // (e.g. `qs -c caelestia ipc call launcher openWithSearch`).
+            // Only the active screen consumes; other monitors leave pendingSearch
+            // for the correct instance.
+            if (root.screenState !== ShellState.forActive())
+                return;
+            const pending = LauncherIpc.consume();
+            if (pending.length > 0)
+                search.text = pending;
+        }
 
         Connections {
             function onLauncherChanged(): void {
-                if (!root.screenState.launcher)
+                if (!root.screenState.launcher) {
                     search.text = "";
+                    CloakProfiles.stopPicker();
+                }
             }
 
             function onSessionChanged(): void {
@@ -121,5 +157,29 @@ Item {
 
             target: root.screenState
         }
+
+        Connections {
+            function onLauncherSearchRequested(text: string): void {
+                if (root.screenState !== ShellState.forActive())
+                    return;
+                LauncherIpc.consume();
+                search.text = text;
+                root.screenState.launcher = true;
+                search.forceActiveFocus();
+            }
+
+            target: LauncherIpc
+        }
+
+        Connections {
+            // Clicking the CloakBrowser app entry asks us to clear the search
+            // text so the picker list is unfiltered.
+            function onPickerRequested(): void {
+                search.text = "";
+            }
+
+            target: CloakProfiles
+        }
+
     }
 }

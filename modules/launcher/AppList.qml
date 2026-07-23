@@ -16,9 +16,35 @@ StyledListView {
     required property SearchBar search
     required property ScreenState screenState
 
+    // model.values is bound ONCE to this intermediary. Switching bindings on
+    // model.values per state makes Qt detach the restored apps binding after
+    // leaving cloak state (search stops filtering). The intermediary is never
+    // written imperatively, so every mode keeps live search filtering.
+    readonly property list<var> cloakValues: {
+        void CloakProfiles.revision;
+        return CloakProfiles.query(search.text);
+    }
+    readonly property list<var> listValues: {
+        switch (root.state) {
+        case "cloak":
+            return cloakValues;
+        case "actions":
+            return Actions.query(search.text);
+        case "calc":
+            return [0];
+        case "scheme":
+            return Schemes.query(search.text);
+        case "variant":
+            return M3Variants.query(search.text);
+        default:
+            return Apps.search(search.text);
+        }
+    }
+
     model: ScriptModel {
         id: model
 
+        values: root.listValues
         onValuesChanged: root.currentIndex = 0
     }
 
@@ -46,6 +72,11 @@ StyledListView {
     }
 
     state: {
+        // Picker mode (entered by clicking the CloakBrowser app entry)
+        // overrides text-based states: profiles show regardless of text.
+        if (CloakProfiles.pickerActive)
+            return "cloak";
+
         const text = search.text;
         const prefix = GlobalConfig.launcher.actionPrefix;
         if (text.startsWith(prefix)) {
@@ -69,7 +100,6 @@ StyledListView {
             name: "apps"
 
             PropertyChanges {
-                model.values: Apps.search(search.text)
                 root.delegate: appItem
             }
         },
@@ -77,7 +107,6 @@ StyledListView {
             name: "actions"
 
             PropertyChanges {
-                model.values: Actions.query(search.text)
                 root.delegate: actionItem
             }
         },
@@ -85,7 +114,6 @@ StyledListView {
             name: "calc"
 
             PropertyChanges {
-                model.values: [0]
                 root.delegate: calcItem
             }
         },
@@ -93,7 +121,6 @@ StyledListView {
             name: "scheme"
 
             PropertyChanges {
-                model.values: Schemes.query(search.text)
                 root.delegate: schemeItem
             }
         },
@@ -101,8 +128,14 @@ StyledListView {
             name: "variant"
 
             PropertyChanges {
-                model.values: M3Variants.query(search.text)
                 root.delegate: variantItem
+            }
+        },
+        State {
+            name: "cloak"
+
+            PropertyChanges {
+                root.delegate: cloakItem
             }
         }
     ]
@@ -253,6 +286,14 @@ StyledListView {
         id: variantItem
 
         VariantItem {
+            list: root
+        }
+    }
+
+    Component {
+        id: cloakItem
+
+        CloakItem {
             list: root
         }
     }

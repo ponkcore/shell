@@ -11,6 +11,13 @@ Searcher {
     function launch(entry: DesktopEntry): void {
         appDb.incrementFrequency(entry.id);
 
+        // CloakBrowser opens the in-launcher profile picker instead of
+        // launching directly (mirrors the old rofi-based desktop entry).
+        if (entry.id === "cloakbrowser" || entry.id === "cloakbrowser.desktop") {
+            CloakProfiles.startPicker();
+            return;
+        }
+
         if (entry.runInTerminal)
             Quickshell.execDetached({
                 command: [...GlobalConfig.general.apps.terminal, `${Quickshell.shellDir}/assets/wrap_term_launch.sh`, ...entry.command],

@@ -136,6 +136,17 @@ Scope {
     }
 
     IpcHandler {
+        function openWithSearch(text: string): void {
+            LauncherIpc.request(text);
+            const state = ShellState.forActive();
+            if (state)
+                state.launcher = true;
+        }
+
+        target: "launcher"
+    }
+
+    IpcHandler {
         function open(): void {
             WindowFactory.create();
         }
