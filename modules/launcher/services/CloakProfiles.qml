@@ -201,7 +201,7 @@ Searcher {
         case "launch":
             list.screenState.launcher = false;
             stopPicker();
-            Quickshell.execDetached(["cb-profile", "launch", item.name]);
+            Launch.exec(["cb-profile", "launch", item.name]);
             return;
         }
     }

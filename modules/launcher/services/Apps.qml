@@ -19,12 +19,9 @@ Searcher {
         }
 
         if (entry.runInTerminal)
-            Quickshell.execDetached({
-                command: [...GlobalConfig.general.apps.terminal, `${Quickshell.shellDir}/assets/wrap_term_launch.sh`, ...entry.command],
-                workingDirectory: entry.workingDirectory
-            });
+            Launch.exec([...GlobalConfig.general.apps.terminal, `${Quickshell.shellDir}/assets/wrap_term_launch.sh`, ...entry.command], entry.workingDirectory);
         else
-            entry.execute();
+            Launch.exec(entry.command, entry.workingDirectory);
     }
 
     function search(search: string): list<var> {
