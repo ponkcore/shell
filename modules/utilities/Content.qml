@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import "cards"
 import QtQuick
 import QtQuick.Layouts
@@ -15,7 +17,9 @@ Item {
 
     // Order per user spec: IdleInhibit, Quick Toggles, Charge Limit,
     // Recordings. Charge-limit row sits between toggles and recordings.
-    readonly property real nonAnimHeight: idleInhibit.nonAnimHeight + toggles.implicitHeight + chargeLimit.nonAnimHeight + record.nonAnimHeight + layout.spacing * 3
+    // ChargeLimit is fork-specific and always enabled (no card config key).
+    readonly property int enabledCards: (idleInhibit.active ? 1 : 0) + (record.active ? 1 : 0) + (toggles.active ? 1 : 0) + 1
+    readonly property real nonAnimHeight: ((idleInhibit.item as IdleInhibit)?.nonAnimHeight ?? 0) + ((record.item as Record)?.nonAnimHeight ?? 0) + ((toggles.item as Toggles)?.implicitHeight ?? 0) + chargeLimit.nonAnimHeight + layout.spacing * Math.max(0, enabledCards - 1)
 
     implicitWidth: layout.implicitWidth
     implicitHeight: layout.implicitHeight
@@ -26,19 +30,31 @@ Item {
         anchors.fill: parent
         spacing: Tokens.spacing.medium
 
-        IdleInhibit {
+        Loader {
             id: idleInhibit
 
-            objectName: "utilitiesKeepAwake"
+            Layout.fillWidth: true
+            active: Config.utilities.cards.keepAwake
+            visible: active
+
+            sourceComponent: IdleInhibit {
+                objectName: "utilitiesKeepAwake"
+            }
         }
 
-        Toggles {
+        Loader {
             id: toggles
 
-            objectName: "utilitiesQuickToggles"
+            Layout.fillWidth: true
+            active: Config.utilities.cards.quickToggles
+            visible: active
 
-            screenState: root.screenState
-            popouts: root.popouts
+            sourceComponent: Toggles {
+                objectName: "utilitiesQuickToggles"
+
+                screenState: root.screenState
+                popouts: root.popouts
+            }
         }
 
         ChargeLimit {
@@ -47,14 +63,20 @@ Item {
             objectName: "utilitiesChargeLimit"
         }
 
-        Record {
+        Loader {
             id: record
 
-            objectName: "utilitiesScreenRecorder"
-
-            props: root.props
-            screenState: root.screenState
+            Layout.fillWidth: true
+            active: Config.utilities.cards.recorder
+            visible: active
             z: 1
+
+            sourceComponent: Record {
+                objectName: "utilitiesScreenRecorder"
+
+                props: root.props
+                screenState: root.screenState
+            }
         }
     }
 

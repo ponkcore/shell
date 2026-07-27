@@ -49,6 +49,18 @@ QtObject {
                 Component {
                     EthernetDetailPage {}
                 }
+                Component {
+                    AddNetworkPage {}
+                }
+                Component {
+                    NetworkDetailPage {}
+                }
+                Component {
+                    AllNetworksPage {}
+                }
+                Component {
+                    SavedNetworksPage {}
+                }
             }
         },
         Component {
@@ -103,6 +115,9 @@ QtObject {
                 }
                 Component {
                     SidebarPanel {}
+                }
+                Component {
+                    UtilitiesPanel {}
                 }
 
                 // Taskbar component sub-pages

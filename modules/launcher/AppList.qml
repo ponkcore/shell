@@ -16,35 +16,58 @@ StyledListView {
     required property SearchBar search
     required property ScreenState screenState
 
-    // model.values is bound ONCE to this intermediary. Switching bindings on
-    // model.values per state makes Qt detach the restored apps binding after
-    // leaving cloak state (search stops filtering). The intermediary is never
-    // written imperatively, so every mode keeps live search filtering.
-    readonly property list<var> cloakValues: {
-        void CloakProfiles.revision;
-        return CloakProfiles.query(search.text);
+    property string displayText
+
+    readonly property string requestedState: stateForText(search.text)
+    readonly property string displayState: stateForText(displayText)
+
+    function syncDisplayText(): void {
+        if (screenState.launcher && requestedState === displayState)
+            displayText = search.text;
     }
-    readonly property list<var> listValues: {
-        switch (root.state) {
+
+    function stateForText(text: string): string {
+        // Picker mode (entered by clicking the CloakBrowser app entry)
+        // overrides text-based states: profiles show regardless of text.
+        if (CloakProfiles.pickerActive)
+            return "cloak";
+
+        const prefix = GlobalConfig.launcher.actionPrefix;
+        if (text.startsWith(prefix)) {
+            for (const action of ["calc", "scheme", "variant"])
+                if (text.startsWith(`${prefix}${action} `))
+                    return action;
+
+            return "actions";
+        }
+
+        return "apps";
+    }
+
+    // model.values is bound ONCE to this function. Switching bindings on
+    // model.values per state makes Qt detach the original binding after
+    // leaving a state (search stops filtering). CloakProfiles.revision is
+    // read explicitly so profile reloads re-evaluate the binding.
+    function resultsForText(text: string): var {
+        switch (stateForText(text)) {
         case "cloak":
-            return cloakValues;
+            void CloakProfiles.revision;
+            return CloakProfiles.query(text);
         case "actions":
-            return Actions.query(search.text);
+            return Actions.query(text);
         case "calc":
             return [0];
         case "scheme":
-            return Schemes.query(search.text);
+            return Schemes.query(text);
         case "variant":
-            return M3Variants.query(search.text);
+            return M3Variants.query(text);
         default:
-            return Apps.search(search.text);
+            return Apps.search(text);
         }
     }
 
     model: ScriptModel {
-        id: model
-
-        values: root.listValues
+        values: root.resultsForText(root.displayText)
         onValuesChanged: root.currentIndex = 0
     }
 
@@ -71,29 +94,14 @@ StyledListView {
         }
     }
 
-    state: {
-        // Picker mode (entered by clicking the CloakBrowser app entry)
-        // overrides text-based states: profiles show regardless of text.
-        if (CloakProfiles.pickerActive)
-            return "cloak";
-
-        const text = search.text;
-        const prefix = GlobalConfig.launcher.actionPrefix;
-        if (text.startsWith(prefix)) {
-            for (const action of ["calc", "scheme", "variant"])
-                if (text.startsWith(`${prefix}${action} `))
-                    return action;
-
-            return "actions";
-        }
-
-        return "apps";
-    }
+    state: screenState.launcher ? requestedState : displayState
 
     onStateChanged: {
         if (state === "scheme" || state === "variant")
             Schemes.reload();
     }
+
+    Component.onCompleted: displayText = search.text
 
     states: [
         State {
@@ -161,8 +169,16 @@ StyledListView {
                 }
             }
             PropertyAction {
-                targets: [model, root]
-                properties: "values,delegate"
+                target: root
+                property: "delegate"
+                value: null
+            }
+            ScriptAction {
+                script: root.displayText = root.search.text
+            }
+            PropertyAction {
+                target: root
+                property: "delegate"
             }
             ParallelAnimation {
                 Anim {
@@ -296,5 +312,21 @@ StyledListView {
         CloakItem {
             list: root
         }
+    }
+
+    Connections {
+        function onTextChanged() {
+            root.syncDisplayText();
+        }
+
+        target: root.search
+    }
+
+    Connections {
+        function onLauncherChanged() {
+            root.syncDisplayText();
+        }
+
+        target: root.screenState
     }
 }

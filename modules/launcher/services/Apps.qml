@@ -24,7 +24,7 @@ Searcher {
             Launch.exec(entry.command, entry.workingDirectory);
     }
 
-    function search(search: string): list<var> {
+    function search(search: string): var {
         const prefix = GlobalConfig.launcher.specialPrefix;
 
         if (search.startsWith(`${prefix}i `)) {
