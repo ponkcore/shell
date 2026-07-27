@@ -8,15 +8,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1783136658,
-        "narHash": "sha256-1t4frpWtweMzxmsvrlceEvN/OMCdsAvENTEsPf5Hf9w=",
-        "owner": "caelestia-dots",
+        "lastModified": 1783566793,
+        "narHash": "sha256-Z8keX0Dtsu1eYNoxpKfmA5cPBTXwwb3oMyegFD+iF+8=",
+        "owner": "ponkcore",
         "repo": "cli",
-        "rev": "7c4f5372eb1ad897e17a36416c57234ced5a5b79",
+        "rev": "d53677052a52cccb6d5b05e77d06d6f781f4ed84",
         "type": "github"
       },
       "original": {
-        "owner": "caelestia-dots",
+        "owner": "ponkcore",
+        "ref": "phase1-fork-baseline",
         "repo": "cli",
         "type": "github"
       }
