@@ -17,7 +17,6 @@
       },
       "original": {
         "owner": "ponkcore",
-        "ref": "phase1-fork-baseline",
         "repo": "cli",
         "type": "github"
       }

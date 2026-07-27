@@ -10,7 +10,7 @@
     };
 
     caelestia-cli = {
-      url = "github:ponkcore/cli/phase1-fork-baseline";
+      url = "github:ponkcore/cli";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.caelestia-shell.follows = "";
     };

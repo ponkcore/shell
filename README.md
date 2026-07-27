@@ -243,7 +243,6 @@ For example, to disable the bar on DP-1:
 > - `lock` (`enableFprint`, `maxFprintTries`)
 > - `nexus` (`networkRescanInterval`)
 > - `utilities.toasts` (all except `fullscreen`)
-> - `utilities.vpn` (`enabled`, `provider`)
 > - `services` (`weatherLocation`, `useFahrenheit`, `useFahrenheitPerformance`, `useTwelveHourClock`,
 >   `gpuType`, `visualiserBars`, `audioIncrement`, `brightnessIncrement`, `maxVolume`, `smartScheme`,
 >   `defaultPlayer`, `playerAliases`, `lyricsBackend`)
@@ -747,7 +746,6 @@ For example, to disable the bar on DP-1:
             "fullscreen": "off",
             "configLoaded": true,
             "chargingChanged": true,
-            "gameModeChanged": true,
             "dndChanged": true,
             "audioOutputChanged": true,
             "audioInputChanged": true,
@@ -755,19 +753,7 @@ For example, to disable the bar on DP-1:
             "numLockChanged": true,
             "kbLayoutChanged": true,
             "kbLimit": true,
-            "vpnChanged": true,
             "nowPlaying": false
-        },
-        "vpn": {
-            "enabled": false,
-            "provider": [
-                {
-                    "name": "wireguard",
-                    "interface": "your-connection-name",
-                    "displayName": "Wireguard (Your VPN)",
-                    "enabled": false
-                }
-            ]
         },
         "quickToggles": [
             {
@@ -787,16 +773,8 @@ For example, to disable the bar on DP-1:
                 "enabled": true
             },
             {
-                "id": "gameMode",
-                "enabled": true
-            },
-            {
                 "id": "dnd",
                 "enabled": true
-            },
-            {
-                "id": "vpn",
-                "enabled": false
             }
         ]
     },
