@@ -75,8 +75,26 @@ StyledRect {
             }
 
             SplitButton {
+                id: recorderButton
+
+                // The menu only picks the recording mode; recording
+                // starts from the main button next to it.
+                function startArgs(item: MenuItem): var {
+                    switch (item?.icon) {
+                    case "screenshot_region":
+                        return ["-r"];
+                    case "select_to_speak":
+                        return ["-s"];
+                    case "volume_up":
+                        return ["-sr"];
+                    default:
+                        return [];
+                    }
+                }
+
                 disabled: Recorder.running
                 menuOnTop: true
+                stateLayer.onClicked: Recorder.start(recorderButton.startArgs(recorderButton.active))
 
                 active: menuItems.find(m => root.props.recordingMode === m.icon + m.text) ?? menuItems[0]
                 menu.onItemSelected: item => root.props.recordingMode = item.icon + item.text
@@ -86,25 +104,21 @@ StyledRect {
                         icon: "fullscreen"
                         text: qsTr("Record fullscreen")
                         activeText: qsTr("Fullscreen")
-                        onClicked: Recorder.start()
                     },
                     MenuItem {
                         icon: "screenshot_region"
                         text: qsTr("Record region")
                         activeText: qsTr("Region")
-                        onClicked: Recorder.start(["-r"])
                     },
                     MenuItem {
                         icon: "select_to_speak"
                         text: qsTr("Record fullscreen with sound")
                         activeText: qsTr("Fullscreen")
-                        onClicked: Recorder.start(["-s"])
                     },
                     MenuItem {
                         icon: "volume_up"
                         text: qsTr("Record region with sound")
                         activeText: qsTr("Region")
-                        onClicked: Recorder.start(["-sr"])
                     }
                 ]
             }
