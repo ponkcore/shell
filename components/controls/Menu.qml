@@ -43,7 +43,13 @@ MouseArea {
             return;
         if (root.expanded && menu.width > 0 && menu.height > 0) {
             win.menuRegion = Qt.rect(menu.x, menu.y, menu.width, menu.height);
-            console.log("[MENUDBG] region set " + menu.x + "," + menu.y + " " + menu.width + "x" + menu.height);
+            const scenePos = menu.mapToItem(null, 0, 0);
+            console.log("[MENUDBG] region set " + menu.x + "," + menu.y + " " + menu.width + "x" + menu.height
+                + " | win " + win.width + "x" + win.height + " dpr " + (win.screen?.devicePixelRatio ?? "?")
+                + " | scene " + scenePos.x.toFixed(0) + "," + scenePos.y.toFixed(0)
+                + " | parent " + root.parent
+                + " | rootEnabled " + root.enabled + " rootVisible " + root.visible + " rootOpacity " + root.opacity.toFixed(2)
+                + " layer " + root.layer.enabled);
         } else if (win.menuRegion.width > 0 && menu.width > 0
             && Math.abs(win.menuRegion.x - menu.x) < 1
             && Math.abs(win.menuRegion.y - menu.y) < 1
@@ -64,6 +70,8 @@ MouseArea {
     }
     anchors.fill: parent
 
+
+    onContainsMouseChanged: console.log("[MENUDBG] root containsMouse=" + containsMouse)
     enabled: expanded
     hoverEnabled: expanded
     cursorShape: expanded ? Qt.ArrowCursor : undefined
