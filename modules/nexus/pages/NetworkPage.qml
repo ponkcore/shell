@@ -93,7 +93,6 @@ PageBase {
                     type: Anim.DefaultEffects
                 }
             }
-
         }
 
         // Saved networks button
@@ -111,6 +110,5 @@ PageBase {
             disabled: !Nmcli.wifiEnabled
             onClicked: root.nState.openSubPage(2) // Add network sub-page
         }
-
     }
 }
