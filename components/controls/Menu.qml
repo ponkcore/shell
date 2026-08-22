@@ -41,6 +41,19 @@ MouseArea {
         const win = QsWindow.window as ContentWindow;
         if (!win)
             return;
+        if (root.expanded && menu.width > 0 && menu.height > 0) {
+            win.menuRegion = Qt.rect(menu.x, menu.y, menu.width, menu.height);
+            console.log("[MENUDBG] region set " + menu.x + "," + menu.y + " " + menu.width + "x" + menu.height);
+        } else if (win.menuRegion.width > 0 && menu.width > 0
+            && Math.abs(win.menuRegion.x - menu.x) < 1
+            && Math.abs(win.menuRegion.y - menu.y) < 1
+            && Math.abs(win.menuRegion.width - menu.width) < 1
+            && Math.abs(win.menuRegion.height - menu.height) < 1) {
+            // This menu owns the current region — clear it. Other
+            // (collapsed) menus must not clobber an open menu's region.
+            win.menuRegion = Qt.rect(0, 0, 0, 0);
+            console.log("[MENUDBG] region cleared");
+        }
     }
 
 
@@ -185,6 +198,7 @@ MouseArea {
                             color: item.active ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3onSurface
                             disabled: !root.expanded
                             onClicked: {
+                                console.log("[MENUDBG] item clicked idx=" + item.index);
                                 root.itemSelected(item.modelData);
                                 root.active = item.modelData;
                                 item.modelData.clicked();

@@ -64,7 +64,7 @@ Region {
     R {
         panel: root.panels.utilities
         y: root.win.height - height
-        height: panel.height * (1 - root.panels.utilities.offsetScale) + root.borderThickness
+        height: panel.height * (1 - root.panels.utilities.offsetScale) + root.borderThickness + (root.win.menuRegion.height > 0 ? 400 : 0) // TEMP DEBUG: fat region +400px while menu open
     }
 
     R {
