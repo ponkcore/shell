@@ -64,23 +64,12 @@ Region {
     R {
         panel: root.panels.utilities
         y: root.win.height - height
-        height: panel.height * (1 - root.panels.utilities.offsetScale) + root.borderThickness + (root.win.menuRegion.height > 0 ? 400 : 0) // TEMP DEBUG: fat region +400px while menu open
+        height: panel.height * (1 - root.panels.utilities.offsetScale) + root.borderThickness
     }
 
     R {
         panel: root.panels.popoutsWrapper
         width: panel.width * (1 - root.panels.popoutsWrapper.offsetScale)
-    }
-
-    // Open menu popups can extend beyond their panel's region (e.g. the
-    // recorder menu opens upward from the utilities panel), so cut them
-    // into the input mask explicitly. Zero-sized when no menu is open.
-    Region {
-        x: root.win.menuRegion.x
-        y: root.win.menuRegion.y
-        width: root.win.menuRegion.width
-        height: root.win.menuRegion.height
-        intersection: Intersection.Subtract
     }
 
     component R: Region {

@@ -33,36 +33,6 @@ MouseArea {
 
     signal itemSelected(item: MenuItem)
 
-    // Publish the popup's window-space rect to the drawers window so its
-    // input mask covers the popup (popups can extend beyond their panel's
-    // region, e.g. the recorder menu opening upward from the utilities
-    // panel — without this, clicks over the popup pass through the window).
-    function syncMaskRegion(): void {
-        const win = QsWindow.window as ContentWindow;
-        if (!win)
-            return;
-        if (root.expanded && menu.width > 0 && menu.height > 0) {
-            win.menuRegion = Qt.rect(menu.x, menu.y, menu.width, menu.height);
-            const scenePos = menu.mapToItem(null, 0, 0);
-            console.log("[MENUDBG] region set " + menu.x + "," + menu.y + " " + menu.width + "x" + menu.height
-                + " | win " + win.width + "x" + win.height + " dpr " + (win.screen?.devicePixelRatio ?? "?")
-                + " | scene " + scenePos.x.toFixed(0) + "," + scenePos.y.toFixed(0)
-                + " | parent " + root.parent
-                + " | rootEnabled " + root.enabled + " rootVisible " + root.visible + " rootOpacity " + root.opacity.toFixed(2)
-                + " layer " + root.layer.enabled);
-        } else if (win.menuRegion.width > 0 && menu.width > 0
-            && Math.abs(win.menuRegion.x - menu.x) < 1
-            && Math.abs(win.menuRegion.y - menu.y) < 1
-            && Math.abs(win.menuRegion.width - menu.width) < 1
-            && Math.abs(win.menuRegion.height - menu.height) < 1) {
-            // This menu owns the current region — clear it. Other
-            // (collapsed) menus must not clobber an open menu's region.
-            win.menuRegion = Qt.rect(0, 0, 0, 0);
-            console.log("[MENUDBG] region cleared");
-        }
-    }
-
-
     parent: {
         const win = QsWindow.window;
         const contentWin = win as ContentWindow; // If inside the drawer content window, put it inside the interaction wrapper so hover works
@@ -70,48 +40,19 @@ MouseArea {
     }
     anchors.fill: parent
 
-
-    onParentChanged: {
-        // The menu starts as a child of the SplitButton Row positioner,
-        // which rejects anchors.fill — restore it after the late
-        // reparent into the window, otherwise the root stays 0x0 and
-        // the whole popup subtree is invisible to hit-testing.
-        if (parent)
-            anchors.fill = parent;
-        console.log("[MENUDBG] reparent -> " + parent + " wh " + width.toFixed(0) + "x" + height.toFixed(0));
-        syncMaskRegion();
-    }
-    onContainsMouseChanged: console.log("[MENUDBG] root containsMouse=" + containsMouse)
     enabled: expanded
     hoverEnabled: expanded
     cursorShape: expanded ? Qt.ArrowCursor : undefined
     onClicked: expanded = false
 
     opacity: expanded ? 1 : 0
-    // Keep the layer alive for the whole expanded phase: flipping
-    // layer.enabled exactly when the fade-in finishes (opacity hits 1)
-    // can race the threaded render loop and leave the popup unpainted
-    // at rest (visible only while animating). Disabling happens only
-    // after the collapse fade completes, when nothing is on screen.
-    layer.enabled: expanded || opacity < 1
-    // Don't keep a transparent full-window overlay in the scene while
-    // fully collapsed.
-    visible: expanded || opacity > 0
-
-    onExpandedChanged: syncMaskRegion()
-    Component.onDestruction: {
-        const win = QsWindow.window as ContentWindow;
-        if (win && win.menuRegion.width > 0)
-            win.menuRegion = Qt.rect(0, 0, 0, 0);
-    }
-
+    layer.enabled: opacity < 1
 
     Behavior on opacity {
         Anim {
             type: Anim.DefaultEffects
         }
     }
-
 
     TransformWatcher {
         id: watcher
@@ -139,11 +80,6 @@ MouseArea {
                 off -= height;
             return item.mapToItem(root.parent, 0, off).y + root.marginY;
         }
-        onXChanged: root.syncMaskRegion()
-        onYChanged: root.syncMaskRegion()
-        onWidthChanged: root.syncMaskRegion()
-        onHeightChanged: root.syncMaskRegion()
-
 
         radius: Tokens.rounding.large
         level: 2
@@ -200,7 +136,7 @@ MouseArea {
                         bottomLeftRadius: index === repeater?.count - 1 ? Tokens.rounding.medium : radius
                         bottomRightRadius: index === repeater?.count - 1 ? Tokens.rounding.medium : radius
 
-                        color: Qt.alpha(Colours.palette.m3secondaryContainer, active ? 1 : 0)
+                        color: Qt.alpha(Colours.palette.m3tertiaryContainer, active ? 1 : 0)
 
                         Behavior on radius {
                             Anim {}
@@ -212,10 +148,9 @@ MouseArea {
                             bottomLeftRadius: parent.bottomLeftRadius
                             bottomRightRadius: parent.bottomRightRadius
 
-                            color: item.active ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3onSurface
+                            color: item.active ? Colours.palette.m3onTertiaryContainer : Colours.palette.m3onSurface
                             disabled: !root.expanded
                             onClicked: {
-                                console.log("[MENUDBG] item clicked idx=" + item.index);
                                 root.itemSelected(item.modelData);
                                 root.active = item.modelData;
                                 item.modelData.clicked();
@@ -233,14 +168,14 @@ MouseArea {
                             MaterialIcon {
                                 Layout.alignment: Qt.AlignVCenter
                                 text: item.modelData?.icon ?? ""
-                                color: item.active ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3onSurfaceVariant
+                                color: item.active ? Colours.palette.m3onTertiaryContainer : Colours.palette.m3onSurfaceVariant
                             }
 
                             StyledText {
                                 Layout.alignment: Qt.AlignVCenter
                                 Layout.fillWidth: true
                                 text: item.modelData?.text ?? ""
-                                color: item.active ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3onSurface
+                                color: item.active ? Colours.palette.m3onTertiaryContainer : Colours.palette.m3onSurface
                             }
 
                             Loader {
@@ -251,7 +186,7 @@ MouseArea {
 
                                 sourceComponent: MaterialIcon {
                                     text: item.modelData.trailingIcon
-                                    color: item.active ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3onSurfaceVariant
+                                    color: item.active ? Colours.palette.m3onTertiaryContainer : Colours.palette.m3onSurfaceVariant
                                 }
                             }
                         }
