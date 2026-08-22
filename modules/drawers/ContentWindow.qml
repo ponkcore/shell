@@ -30,12 +30,18 @@ StyledWindow {
             if (!specialName)
                 return false;
             const specialWs = Hypr.workspaces.values.find(ws => ws.name === specialName);
+
             return specialWs?.toplevels.values.some(t => t.lastIpcObject.fullscreen > 1) ?? false;
         }
         return hasFullscreenOnNormalWs;
     }
 
     property real fsTransitionProg: hasFullscreen ? 1 : 0
+
+    // Window-space rect of an open menu popup (see Menu.qml). Empty when
+    // no menu is open. The input mask subtracts it so clicks over the
+    // popup reach this window instead of passing through it.
+    property rect menuRegion: Qt.rect(0, 0, 0, 0)
     readonly property real sdfBorderOffset: 2 * fsTransitionProg // SDFs joins are not exact, so offset by 2px to ensure nothing shows
     readonly property real borderThickness: contentItem.Config.border.thickness * (1 - fsTransitionProg)
     readonly property real borderRounding: contentItem.Config.border.rounding * (1 - fsTransitionProg)

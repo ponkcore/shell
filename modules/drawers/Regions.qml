@@ -72,6 +72,17 @@ Region {
         width: panel.width * (1 - root.panels.popoutsWrapper.offsetScale)
     }
 
+    // Open menu popups can extend beyond their panel's region (e.g. the
+    // recorder menu opens upward from the utilities panel), so cut them
+    // into the input mask explicitly. Zero-sized when no menu is open.
+    Region {
+        x: root.win.menuRegion.x
+        y: root.win.menuRegion.y
+        width: root.win.menuRegion.width
+        height: root.win.menuRegion.height
+        intersection: Intersection.Subtract
+    }
+
     component R: Region {
         required property Item panel
 

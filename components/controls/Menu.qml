@@ -33,6 +33,17 @@ MouseArea {
 
     signal itemSelected(item: MenuItem)
 
+    // Publish the popup's window-space rect to the drawers window so its
+    // input mask covers the popup (popups can extend beyond their panel's
+    // region, e.g. the recorder menu opening upward from the utilities
+    // panel — without this, clicks over the popup pass through the window).
+    function syncMaskRegion(): void {
+        const win = QsWindow.window as ContentWindow;
+        if (!win)
+            return;
+    }
+
+
     parent: {
         const win = QsWindow.window;
         const contentWin = win as ContentWindow; // If inside the drawer content window, put it inside the interaction wrapper so hover works
@@ -56,11 +67,21 @@ MouseArea {
     // fully collapsed.
     visible: expanded || opacity > 0
 
+    onExpandedChanged: syncMaskRegion()
+    onParentChanged: syncMaskRegion()
+    Component.onDestruction: {
+        const win = QsWindow.window as ContentWindow;
+        if (win && win.menuRegion.width > 0)
+            win.menuRegion = Qt.rect(0, 0, 0, 0);
+    }
+
+
     Behavior on opacity {
         Anim {
             type: Anim.DefaultEffects
         }
     }
+
 
     TransformWatcher {
         id: watcher
@@ -88,6 +109,11 @@ MouseArea {
                 off -= height;
             return item.mapToItem(root.parent, 0, off).y + root.marginY;
         }
+        onXChanged: root.syncMaskRegion()
+        onYChanged: root.syncMaskRegion()
+        onWidthChanged: root.syncMaskRegion()
+        onHeightChanged: root.syncMaskRegion()
+
 
         radius: Tokens.rounding.large
         level: 2
@@ -144,7 +170,7 @@ MouseArea {
                         bottomLeftRadius: index === repeater?.count - 1 ? Tokens.rounding.medium : radius
                         bottomRightRadius: index === repeater?.count - 1 ? Tokens.rounding.medium : radius
 
-                        color: Qt.alpha(Colours.palette.m3tertiaryContainer, active ? 1 : 0)
+                        color: Qt.alpha(Colours.palette.m3secondaryContainer, active ? 1 : 0)
 
                         Behavior on radius {
                             Anim {}
@@ -156,7 +182,7 @@ MouseArea {
                             bottomLeftRadius: parent.bottomLeftRadius
                             bottomRightRadius: parent.bottomRightRadius
 
-                            color: item.active ? Colours.palette.m3onTertiaryContainer : Colours.palette.m3onSurface
+                            color: item.active ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3onSurface
                             disabled: !root.expanded
                             onClicked: {
                                 root.itemSelected(item.modelData);
@@ -176,14 +202,14 @@ MouseArea {
                             MaterialIcon {
                                 Layout.alignment: Qt.AlignVCenter
                                 text: item.modelData?.icon ?? ""
-                                color: item.active ? Colours.palette.m3onTertiaryContainer : Colours.palette.m3onSurfaceVariant
+                                color: item.active ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3onSurfaceVariant
                             }
 
                             StyledText {
                                 Layout.alignment: Qt.AlignVCenter
                                 Layout.fillWidth: true
                                 text: item.modelData?.text ?? ""
-                                color: item.active ? Colours.palette.m3onTertiaryContainer : Colours.palette.m3onSurface
+                                color: item.active ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3onSurface
                             }
 
                             Loader {
@@ -194,7 +220,7 @@ MouseArea {
 
                                 sourceComponent: MaterialIcon {
                                     text: item.modelData.trailingIcon
-                                    color: item.active ? Colours.palette.m3onTertiaryContainer : Colours.palette.m3onSurfaceVariant
+                                    color: item.active ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3onSurfaceVariant
                                 }
                             }
                         }
