@@ -71,6 +71,16 @@ MouseArea {
     anchors.fill: parent
 
 
+    onParentChanged: {
+        // The menu starts as a child of the SplitButton Row positioner,
+        // which rejects anchors.fill — restore it after the late
+        // reparent into the window, otherwise the root stays 0x0 and
+        // the whole popup subtree is invisible to hit-testing.
+        if (parent)
+            anchors.fill = parent;
+        console.log("[MENUDBG] reparent -> " + parent + " wh " + width.toFixed(0) + "x" + height.toFixed(0));
+        syncMaskRegion();
+    }
     onContainsMouseChanged: console.log("[MENUDBG] root containsMouse=" + containsMouse)
     enabled: expanded
     hoverEnabled: expanded
