@@ -1,5 +1,6 @@
 #pragma once
 
+#include "configlist.hpp"
 #include "configobject.hpp"
 
 #include <qstring.h>
@@ -51,13 +52,13 @@ class UtilitiesConfig : public ConfigObject {
     CONFIG_PROPERTY(int, maxToasts, 4)
     CONFIG_SUBOBJECT(UtilitiesCards, cards)
     CONFIG_SUBOBJECT(UtilitiesToasts, toasts)
-    CONFIG_PROPERTY(QVariantList, quickToggles,
+    CONFIG_LIST(EntryList, quickToggles,
         {
-            vmap({ { u"id"_s, u"wifi"_s }, { u"enabled"_s, true } }),
-            vmap({ { u"id"_s, u"bluetooth"_s }, { u"enabled"_s, true } }),
-            vmap({ { u"id"_s, u"mic"_s }, { u"enabled"_s, true } }),
-            vmap({ { u"id"_s, u"settings"_s }, { u"enabled"_s, true } }),
-            vmap({ { u"id"_s, u"dnd"_s }, { u"enabled"_s, true } }),
+            LIST_ENTRY(wifi, true),
+            LIST_ENTRY(bluetooth, true),
+            LIST_ENTRY(mic, true),
+            LIST_ENTRY(settings, true),
+            LIST_ENTRY(dnd, true),
         })
 
 public:
