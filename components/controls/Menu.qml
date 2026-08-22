@@ -46,7 +46,15 @@ MouseArea {
     onClicked: expanded = false
 
     opacity: expanded ? 1 : 0
-    layer.enabled: opacity < 1
+    // Keep the layer alive for the whole expanded phase: flipping
+    // layer.enabled exactly when the fade-in finishes (opacity hits 1)
+    // can race the threaded render loop and leave the popup unpainted
+    // at rest (visible only while animating). Disabling happens only
+    // after the collapse fade completes, when nothing is on screen.
+    layer.enabled: expanded || opacity < 1
+    // Don't keep a transparent full-window overlay in the scene while
+    // fully collapsed.
+    visible: expanded || opacity > 0
 
     Behavior on opacity {
         Anim {
