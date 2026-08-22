@@ -99,7 +99,6 @@ MouseArea {
     visible: expanded || opacity > 0
 
     onExpandedChanged: syncMaskRegion()
-    onParentChanged: syncMaskRegion()
     Component.onDestruction: {
         const win = QsWindow.window as ContentWindow;
         if (win && win.menuRegion.width > 0)
