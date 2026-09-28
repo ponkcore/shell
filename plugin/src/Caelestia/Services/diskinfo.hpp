@@ -18,16 +18,17 @@ class DiskInfo : public QObject {
     Q_PROPERTY(bool hasRoot READ hasRoot NOTIFY hasRootChanged)
 
 public:
-    DiskInfo(QString mount, quint64 usedBytes, quint64 totalBytes, bool hasRoot, QObject* parent = nullptr);
+    DiskInfo(QString mount, quint64 usedBytes, quint64 availBytes, quint64 totalBytes, bool hasRoot,
+        QObject* parent = nullptr);
 
     [[nodiscard]] QString mount() const;
-    [[nodiscard]] qreal used() const;  // KiB
-    [[nodiscard]] qreal total() const; // KiB
-    [[nodiscard]] qreal free() const;  // KiB
-    [[nodiscard]] qreal perc() const;
+    [[nodiscard]] qreal used() const;  // KiB, occupied by files (total - statvfs.f_bfree)
+    [[nodiscard]] qreal total() const; // KiB, statvfs.f_blocks * f_frsize
+    [[nodiscard]] qreal free() const;  // KiB, allocatable by an unprivileged user (statvfs.f_bavail)
+    [[nodiscard]] qreal perc() const;  // used / (used + free), i.e. df's "Use%"
     [[nodiscard]] bool hasRoot() const;
 
-    void update(quint64 usedBytes, quint64 totalBytes, bool hasRoot);
+    void update(quint64 usedBytes, quint64 availBytes, quint64 totalBytes, bool hasRoot);
 
 signals:
     void usedChanged();
@@ -39,6 +40,7 @@ signals:
 private:
     QString m_mount;
     quint64 m_usedBytes;
+    quint64 m_availBytes;
     quint64 m_totalBytes;
     bool m_hasRoot;
 };

@@ -19,6 +19,7 @@ namespace {
 
 struct Accum {
     quint64 usedBytes = 0;
+    quint64 availBytes = 0;
     quint64 totalBytes = 0;
     bool hasRoot = false;
 };
@@ -102,12 +103,14 @@ Storage::Storage(QObject* parent)
 
 qreal Storage::percentage() const {
     qreal totalUsed = 0.0;
-    qreal totalSize = 0.0;
+    qreal totalAvail = 0.0;
     for (const DiskInfo* d : m_disks) {
         totalUsed += d->used();
-        totalSize += d->total();
+        totalAvail += d->free();
     }
-    return totalSize > 0.0 ? totalUsed / totalSize : 0.0;
+    // Same df "Use%" semantics as DiskInfo::perc(): the per-filesystem root
+    // reserve is neither used nor allocatable and stays out of the denominator.
+    return (totalUsed + totalAvail) > 0.0 ? totalUsed / (totalUsed + totalAvail) : 0.0;
 }
 
 bool Storage::sameOrder(const QList<DiskInfo*>& a, const QList<DiskInfo*>& b) {
@@ -208,11 +211,12 @@ void Storage::tick() {
     QHash<QString, Accum> byDisk;
 
     // Multiple mounts can share a single backing filesystem (btrfs subvolumes,
-    // bind mounts, etc.) and each one reports identical bytesTotal/bytesAvailable.
+    // bind mounts, etc.) and each one reports identical statvfs figures.
     // Dedupe by source device so the filesystem only contributes once per disk.
     struct DeviceEntry {
         quint64 totalBytes = 0;
         quint64 usedBytes = 0;
+        quint64 availBytes = 0;
         bool hasRoot = false;
         QByteArray device;
         QByteArray fsType;
@@ -231,8 +235,15 @@ void Storage::tick() {
 
         const QByteArray device = v.device();
         const auto totalBytes = static_cast<quint64>(v.bytesTotal());
+        // bytesFree() is statvfs.f_bfree and includes the filesystem's root
+        // reserve; bytesAvailable() is f_bavail and excludes it. "Used" must be
+        // total - f_bfree to match df's "Used" column — deriving it from
+        // f_bavail silently folds the reserve into used. The two still differ
+        // from each other, so used + free != total on filesystems with a
+        // reserve. That is correct: the reserve is neither used nor allocatable.
+        const auto freeBytes = static_cast<quint64>(v.bytesFree());
         const auto availBytes = static_cast<quint64>(v.bytesAvailable());
-        const quint64 usedBytes = totalBytes > availBytes ? totalBytes - availBytes : 0;
+        const quint64 usedBytes = totalBytes > freeBytes ? totalBytes - freeBytes : 0;
         const bool isRoot = v.rootPath() == QStringLiteral("/");
 
         DeviceEntry& e = byDevice[device];
@@ -240,6 +251,7 @@ void Storage::tick() {
         e.fsType = v.fileSystemType();
         e.totalBytes = totalBytes;
         e.usedBytes = usedBytes;
+        e.availBytes = availBytes;
         e.hasRoot = e.hasRoot || isRoot;
     }
 
@@ -259,6 +271,7 @@ void Storage::tick() {
                 Accum& a = byDisk[pool];
                 if (!a.hasRoot && (e.hasRoot || e.totalBytes > a.totalBytes)) {
                     a.usedBytes = e.usedBytes;
+                    a.availBytes = e.availBytes;
                     a.totalBytes = e.totalBytes;
                     a.hasRoot = e.hasRoot;
                 }
@@ -271,6 +284,7 @@ void Storage::tick() {
             }
             Accum& a = byDisk[d];
             a.usedBytes += e.usedBytes;
+            a.availBytes += e.availBytes;
             a.totalBytes += e.totalBytes;
             a.hasRoot = a.hasRoot || e.hasRoot;
         }
@@ -286,10 +300,11 @@ void Storage::tick() {
     next.reserve(byDisk.size());
     for (auto it = byDisk.constBegin(); it != byDisk.constEnd(); ++it) {
         if (DiskInfo* survivor = existing.take(it.key())) {
-            survivor->update(it.value().usedBytes, it.value().totalBytes, it.value().hasRoot);
+            survivor->update(it.value().usedBytes, it.value().availBytes, it.value().totalBytes, it.value().hasRoot);
             next.append(survivor);
         } else {
-            next.append(new DiskInfo(it.key(), it.value().usedBytes, it.value().totalBytes, it.value().hasRoot, this));
+            next.append(new DiskInfo(it.key(), it.value().usedBytes, it.value().availBytes, it.value().totalBytes,
+                it.value().hasRoot, this));
         }
     }
 
