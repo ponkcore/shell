@@ -2,7 +2,6 @@ pragma Singleton
 
 import ".."
 import QtQuick
-import Quickshell
 import Quickshell.Io
 import Caelestia
 import Caelestia.Config
@@ -57,7 +56,6 @@ Searcher {
         return item.name;
     }
 
-
     // Nerd Font glyphs (not emoji, not Material Symbols) for row icons.
     // Rendered with a Nerd Font family in CloakItem. Unknown platforms get a
     // generic globe glyph so no row renders an empty icon.
@@ -86,17 +84,18 @@ Searcher {
 
         const kind = isCreateMode() ? "create" : isDeleteMode() ? "delete" : "list";
 
-
         let items = [];
         if (kind === "create") {
             if (createName.length === 0) {
-                items = [{
+                items = [
+                    {
                         kind,
                         action: "hint",
                         name: qsTr("New profile"),
                         desc: qsTr("Type a name, press Enter"),
                         glyph: ""
-                    }];
+                    }
+                ];
             } else {
                 items = ["windows", "macos", "linux"].map(p => ({
                             kind,

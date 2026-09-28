@@ -29,17 +29,32 @@ Singleton {
 
     // Per-mode display metadata.
     readonly property var modeInfo: ({
-        "full": { "label": "100%", "percent": 100 },
-        "high": { "label": "95%", "percent": 95 },
-        "balanced": { "label": "80%", "percent": 80 },
-        "lifespan": { "label": "60%", "percent": 60 },
-        "desk": { "label": "50%", "percent": 50 }
-    })
+            "full": {
+                "label": "100%",
+                "percent": 100
+            },
+            "high": {
+                "label": "95%",
+                "percent": 95
+            },
+            "balanced": {
+                "label": "80%",
+                "percent": 80
+            },
+            "lifespan": {
+                "label": "60%",
+                "percent": 60
+            },
+            "desk": {
+                "label": "50%",
+                "percent": 50
+            }
+        })
 
     // Refresh currentMode and currentPercent by calling
     // `lecoo-charge-mode status` (returns JSON).
     function refresh(): void {
-        statusProc.running = true
+        statusProc.running = true;
     }
 
     // Set a new charge mode. Optimistically update currentMode
@@ -47,16 +62,16 @@ Singleton {
     // the command has had time to take effect.
     function setMode(mode: string): void {
         if (!root.available)
-            return
+            return;
         if (!root.modes.includes(mode))
-            return
-        root.currentMode = mode
-        Quickshell.execDetached(["lecoo-charge-mode", "set", mode])
-        refreshTimer.start()
+            return;
+        root.currentMode = mode;
+        Quickshell.execDetached(["lecoo-charge-mode", "set", mode]);
+        refreshTimer.start();
     }
 
     Component.onCompleted: {
-        availProc.running = true
+        availProc.running = true;
     }
 
     // Availability check.
@@ -67,10 +82,10 @@ Singleton {
 
         stdout: StdioCollector {
             onStreamFinished: {
-                const result = text.trim()
-                root.available = result === "yes"
+                const result = text.trim();
+                root.available = result === "yes";
                 if (root.available)
-                    root.refresh()
+                    root.refresh();
             }
         }
     }
@@ -83,13 +98,13 @@ Singleton {
 
         stdout: StdioCollector {
             onStreamFinished: {
-                const raw = text.trim()
+                const raw = text.trim();
                 if (raw.length === 0)
-                    return
+                    return;
                 try {
-                    const json = JSON.parse(raw)
-                    root.currentMode = json.mode || "unknown"
-                    root.currentPercent = json.percent || 0
+                    const json = JSON.parse(raw);
+                    root.currentMode = json.mode || "unknown";
+                    root.currentPercent = json.percent || 0;
                 } catch (e) {
                     // JSON parse failure — keep previous state.
                 }

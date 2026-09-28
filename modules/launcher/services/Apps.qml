@@ -4,6 +4,7 @@ import Quickshell
 import Caelestia
 import Caelestia.Config
 import qs.utils
+import qs.modules.launcher.services
 
 Searcher {
     id: root

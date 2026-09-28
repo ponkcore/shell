@@ -25,15 +25,27 @@ Singleton {
 
     // Per-mode display metadata.
     readonly property var modeInfo: ({
-        "eco+": { "icon": "battery_saver", "label": "Eco+" },
-        "eco": { "icon": "energy_savings_leaf", "label": "Eco" },
-        "balanced": { "icon": "balance", "label": "Balanced" },
-        "performance": { "icon": "rocket_launch", "label": "Performance" }
-    })
+            "eco+": {
+                "icon": "battery_saver",
+                "label": "Eco+"
+            },
+            "eco": {
+                "icon": "energy_savings_leaf",
+                "label": "Eco"
+            },
+            "balanced": {
+                "icon": "balance",
+                "label": "Balanced"
+            },
+            "performance": {
+                "icon": "rocket_launch",
+                "label": "Performance"
+            }
+        })
 
     // Refresh currentMode by calling `lecoo-power-mode get`.
     function refresh(): void {
-        getProc.running = true
+        getProc.running = true;
     }
 
     // Set a new power mode. Optimistically update currentMode
@@ -41,17 +53,17 @@ Singleton {
     // the command has had time to take effect.
     function setMode(mode: string): void {
         if (!root.available)
-            return
+            return;
         if (!root.modes.includes(mode))
-            return
-        root.currentMode = mode
-        Quickshell.execDetached(["lecoo-power-mode", "set", mode])
-        refreshTimer.start()
+            return;
+        root.currentMode = mode;
+        Quickshell.execDetached(["lecoo-power-mode", "set", mode]);
+        refreshTimer.start();
     }
 
     Component.onCompleted: {
         // Check availability first, then read initial state.
-        availProc.running = true
+        availProc.running = true;
     }
 
     // Availability check: `command -v lecoo-power-mode`.
@@ -62,10 +74,10 @@ Singleton {
 
         stdout: StdioCollector {
             onStreamFinished: {
-                const result = text.trim()
-                root.available = result === "yes"
+                const result = text.trim();
+                root.available = result === "yes";
                 if (root.available)
-                    root.refresh()
+                    root.refresh();
             }
         }
     }
@@ -78,9 +90,9 @@ Singleton {
 
         stdout: StdioCollector {
             onStreamFinished: {
-                const mode = text.trim()
+                const mode = text.trim();
                 if (mode.length > 0)
-                    root.currentMode = mode
+                    root.currentMode = mode;
             }
         }
     }
