@@ -1,192 +1,173 @@
-<h1 align=center>caelestia-shell</h1>
+# caelestia-shell (ponkcore fork)
 
-<div align=center>
+Fork of [`caelestia-dots/shell`](https://github.com/caelestia-dots/shell) —
+the Caelestia desktop shell built on [Quickshell](https://quickshell.outfoxxed.me)
+for [Hyprland](https://hypr.land). This fork is deployed through
+[`ponkcore/nix-config`](https://github.com/ponkcore/nix-config), not through the
+upstream dotfiles.
 
-![GitHub last commit](https://img.shields.io/github/last-commit/caelestia-dots/shell?style=for-the-badge&labelColor=101418&color=9ccbfb)
-![GitHub Repo stars](https://img.shields.io/github/stars/caelestia-dots/shell?style=for-the-badge&labelColor=101418&color=b9c8da)
-![GitHub repo size](https://img.shields.io/github/repo-size/caelestia-dots/shell?style=for-the-badge&labelColor=101418&color=d3bfe6)
-[![Ko-Fi donate](https://img.shields.io/badge/donate-kofi?style=for-the-badge&logo=ko-fi&logoColor=ffffff&label=ko-fi&labelColor=101418&color=f16061&link=https%3A%2F%2Fko-fi.com%2Fsoramane)](https://ko-fi.com/soramane)
-[![Discord invite](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdiscordapp.com%2Fapi%2Finvites%2FBGDCFCmMBk%3Fwith_counts%3Dtrue&query=approximate_member_count&style=for-the-badge&logo=discord&logoColor=ffffff&label=discord&labelColor=101418&color=96f1f1&link=https%3A%2F%2Fdiscord.gg%2FBGDCFCmMBk)][discord]
+See [`OWNERSHIP.md`](OWNERSHIP.md) for what this fork owns versus what stays
+upstream, and which upstream subsystems are deliberately removed.
 
-</div>
+## Repository layout
 
-https://github.com/user-attachments/assets/0840f496-575c-4ca6-83a8-87bb01a85c5f
+| Path | Contents |
+| --- | --- |
+| `plugin/src/Caelestia/` | C++ Qt6 QML plugin — services, config, models, images |
+| `components/`, `modules/` | QML component library and shell UI modules |
+| `services/`, `utils/` | QML service singletons and helpers |
+| `extras/` | version helper library |
+| `nix/` | Nix package expression and Home Manager module |
+| `scripts/` | `qml-lint-conventions.py`, the QML convention linter CI runs |
+| `assets/` | fonts, wallpapers, PAM config, misc images |
 
-## Components
+## Building
 
--   Widgets: [`Quickshell`](https://quickshell.outfoxxed.me)
--   Window manager: [`Hyprland`](https://hypr.land)
--   Dots: [`caelestia`][dots-repo]
-
-## Installation
-
-> [!NOTE]
-> This repo is for Caelestia's desktop shell only. If you want installation instructions
-> for the entire dotfiles (which include this shell), head to [the main repo][dots-repo] instead.
-
-### Arch Linux
-
-> [!WARNING]
-> If you want to make your own changes/tweaks to the shell, do NOT edit the files installed by the AUR
-> package. Instead, follow the instructions in the [manual installation section](#manual-installation).
-
-The shell is available from the AUR as `caelestia-shell`. You can install it with an AUR helper (recommended),
-like [`paru`](https://github.com/morganamilo/paru), or by manually downloading the PKGBUILD and running `makepkg -si`.
-
-A package following the latest commit also exists as `caelestia-shell-git`. This is bleeding-edge
-and likely to be unstable/have bugs. Regular users are recommended to use the stable package (`caelestia-shell`).
-
-### Nix
-
-You can run the shell directly via `nix run`:
+The build requires a Nix devShell — `flake.nix` pins Quickshell from upstream
+git (not the nixpkgs stable package) plus the Qt6/clazy toolchain.
 
 ```sh
-nix run github:caelestia-dots/shell#with-cli
+git clone https://github.com/ponkcore/shell.git
+cd shell
+nix develop          # or: direnv allow, if you read .envrc first
 ```
 
-Or add it to your system configuration:
-
-```nix
-{
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-
-    caelestia-shell = {
-      url = "github:caelestia-dots/shell";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-  };
-}
-```
-
-For full functionality, use `caelestia-shell.packages.<system>.with-cli`, which can be added to your
-`environment.systemPackages`, `users.users.<username>.packages`, `home.packages` if using home-manager,
-or a devshell. The `default` package does not include the CLI.
-You can then run the shell with `caelestia-shell`.
-
-For home-manager, you can also use Caelestia's Home Manager module (explained in [the configuration section](#home-manager-module)), which installs and configures the shell and CLI.
-
-### Manual installation
-
-Dependencies:
-
--   [`caelestia-cli`](https://github.com/caelestia-dots/cli)
--   [`quickshell-git`](https://git.outfoxxed.me/quickshell/quickshell) - this has to be the git version, not the latest tagged version
--   `glibc`
--   `gcc-libs`
--   [`ddcutil`](https://github.com/rockowitz/ddcutil)
--   [`brightnessctl`](https://github.com/Hummer12007/brightnessctl)
--   [`libcava`](https://github.com/LukashonakV/cava)
--   [`networkmanager`](https://gitlab.freedesktop.org/NetworkManager/NetworkManager)
--   [`lm_sensors`](https://github.com/lm-sensors/lm-sensors)
--   [`aubio`](https://github.com/aubio/aubio)
--   [`libpipewire`](https://github.com/PipeWire/pipewire)
--   [`libqalculate`](https://github.com/Qalculate/libqalculate)
--   [`power-profiles-daemon`](https://gitlab.freedesktop.org/upower/power-profiles-daemon)
--   [`ttf-material-symbols-variable`](https://github.com/google/material-design-icons)
--   [`ttf-rubik-vf`](https://github.com/googlefonts/rubik)
--   [`ttf-cascadia-code-nerd`](https://github.com/ryanoasis/nerd-fonts)
--   `qt6-base`
--   `qt6-declarative`
--   `qt6-imageformats`
--   [`swappy`](https://github.com/jtheoof/swappy)
--   [`fish`](https://github.com/fish-shell/fish-shell)
--   [`bash`](https://www.gnu.org/software/bash)
-
-Build dependencies:
-
--   [`cmake`](https://gitlab.kitware.com/cmake/cmake)
--   [`ninja`](https://github.com/ninja-build/ninja)
--   `qt6-shadertools`
-
-> [!IMPORTANT]
-> The commands below (and in the "Updating" section) assume `$XDG_CONFIG_HOME` is set.
-> If it is unset, substitute it with the path to your config folder (typically `~/.config`).
-
-To install the shell manually, install all dependencies and clone this repo to `$XDG_CONFIG_HOME/quickshell/caelestia`.
-Then build and install using CMake.
+`.envrc` configures and builds into `build/` on every entry, using `clazy` as
+the C++ compiler. To build explicitly:
 
 ```sh
-cd $XDG_CONFIG_HOME/quickshell
-git clone https://github.com/caelestia-dots/shell.git caelestia
-
-cd caelestia
-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
 cmake --build build
-sudo cmake --install build
 ```
 
-> [!TIP]
-> You can customise the installation location via the CMake flags `INSTALL_LIBDIR`, `INSTALL_QMLDIR`, and
-> `INSTALL_QSCONFDIR` for the libraries (e.g. the version helper), QML plugin, and Quickshell config directories
-> respectively. If you set the `INSTALL_LIBDIR` flag, the `CAELESTIA_LIB_DIR` variable must also be set to
-> the same directory in your system's environment.
->
-> For example, installing to `~/.config/quickshell/caelestia` for easy local changes:
->
-> ```sh
-> mkdir -p ~/.config/quickshell/caelestia
-> cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/ -DINSTALL_QSCONFDIR="$HOME/.config/quickshell/caelestia"
-> cmake --build build
-> sudo cmake --install build
-> sudo chown -R $USER ~/.config/quickshell/caelestia
-> ```
+To produce an installable package without a devShell:
+
+```sh
+nix build .#caelestia-shell      # shell only
+nix build .#with-cli             # shell + ponkcore/cli
+```
+
+The `caelestia-cli` flake input points at
+[`ponkcore/cli`](https://github.com/ponkcore/cli). Both forks are wired
+together through `nix-config`, which makes each follow the other so the
+Quickshell and m3shapes nodes are shared rather than duplicated.
+
+## Deploying
+
+On this host the shell is built from `github:ponkcore/shell/main` by
+`nix-config` and runs as the user service `caelestia.service`, launched by
+`wayland-session@Hyprland.target`. The running binary comes from the Nix store,
+so **a local edit does not reach the screen** — the change must be pushed and
+the system rebuilt:
+
+```sh
+git push origin main
+# then, as the system administrator:
+sudo nixos-rebuild switch --flake /etc/nixos#lecoo
+systemctl --user restart caelestia.service
+```
+
+For throwaway testing without deploying, run a second instance against a local
+build — note that two shells on one compositor will fight over layer-shell
+surfaces, so stop the service first:
+
+```sh
+systemctl --user stop caelestia.service
+./result/bin/caelestia-shell
+```
+
+## Checking
+
+CI runs three gates. All three reproduce locally from the devShell:
+
+```sh
+# QML formatting + fork conventions
+for f in $(git ls-files '*.qml'); do qmlformat "$f" | diff -u "$f" - || break; done
+python3 scripts/qml-lint-conventions.py
+
+# C++ formatting
+find plugin extras -name '*.cpp' -o -name '*.hpp' | xargs clang-format --dry-run --Werror
+
+# QML lint — needs a built plugin so generated types resolve.
+# .qmlls.ini is produced by `qs -p .` and carries buildDir/importPaths.
+cmake --build build
+touch .qmlls.ini && QT_QPA_PLATFORM=offscreen QML2_IMPORT_PATH="$PWD/build/qml" timeout 2 qs -p .
+qmllint --import disable -I <buildDir> -I <importPaths…> $(git ls-files '*.qml')
+```
+
+`qml-lint-conventions.py` enforces the import order used across the tree:
+QtQuick, other Qt, Quickshell, M3Shapes, Caelestia, `qs.components`,
+`qs.services`, `qs.config`, `qs.utils`, `qs.modules.*`. A singleton that calls
+into a sibling singleton must import its own module explicitly
+(`import qs.modules.launcher.services`) — relative resolution works at runtime
+but leaves `qmllint` unable to see the sibling's members.
+
+## Syncing with upstream
+
+```sh
+git fetch upstream
+git merge upstream/main
+```
+
+Upstream-owned files that this fork intentionally diverges from will conflict.
+Re-apply the fork side for `OWNERSHIP.md`, `.github/FUNDING.yml`,
+`README.md`, `shell.qml`'s `QS_CRASHREPORT_URL`, and the removed `VPN.qml` /
+`GameMode.qml` services. The `flake.nix` Quickshell pin is a fork decision too —
+upstream periodically re-locks it.
+
+After a merge, re-run all three checks above: upstream refactors routinely
+break `qmllint` on fork-local QML that only exists in this tree.
 
 ## Usage
 
-You can start the shell by running `caelestia shell -d` (preferred) or `qs -c caelestia -n -d`.
-You may omit `-d` from the command to keep the shell attached to the current terminal if necessary,
-though you likely want it to be detached (so it doesn't close when the terminal is closed).
+The shell starts from `caelestia.service`, so there is nothing to launch by
+hand in normal use. To drive it manually:
 
-If using the [Caelestia dotfiles][dots-repo], the shell will be autostarted on login
-via a `hl.on("hyprland.start", ...)` function in the Hyprland config.
+```sh
+caelestia shell -d      # preferred: detached
+qs -c caelestia -n -d
+```
+
+Omit `-d` to keep the shell attached to the current terminal.
 
 ### Shortcuts/IPC
 
-All keybinds are accessible via Hyprland [global shortcuts](https://wiki.hypr.land/Configuring/Basics/Binds/#dbus-global-shortcuts).
-If using the [Caelestia dotfiles][dots-repo], the keybinds are already configured for you.
-Otherwise, the [`keybinds.lua`](https://github.com/caelestia-dots/caelestia/blob/main/hypr/hyprland/keybinds.lua#L63-L67) file
-contains an example of how to use global shortcuts.
+Keybinds are wired in `nix-config` through Hyprland
+[global shortcuts](https://wiki.hypr.land/Configuring/Basics/Binds/#dbus-global-shortcuts),
+not in this repo. Upstream's
+[`keybinds.lua`](https://github.com/caelestia-dots/caelestia/blob/main/hypr/hyprland/keybinds.lua#L63-L67)
+shows the shape of that wiring if you need a reference.
 
-All IPC commands can be accessed via `caelestia shell ...`, for example:
+All IPC commands are reachable via `caelestia shell ...`:
 
 ```sh
 caelestia shell mpris getActive trackTitle
+caelestia shell -s        # list available IPC commands
 ```
-
-You can view the list of available IPC commands by running `caelestia shell -s`.
 
 ### PFP/Wallpapers
 
-The profile picture for the dashboard is read from the file `~/.face`. You can set it by clicking it in the dashboard,
-or by manually copying or symlinking your image to the path.
+The dashboard profile picture is read from `~/.face`; set it by clicking it in
+the dashboard, or by copying or symlinking an image to that path.
 
-The wallpapers for the wallpaper switcher are read from `~/Pictures/Wallpapers`
-by default. To change it, modify `paths.wallpaperDir` in `~/.config/caelestia/shell.json`.
+Wallpapers for the switcher are read from `~/Pictures/Wallpapers` by default.
+Change that with `paths.wallpaperDir` in `~/.config/caelestia/shell.json`.
 
-To set the wallpaper, you can type `>wallpaper` in the launcher to open the wallpaper switcher.
-Alternatively, you can also use `caelestia wallpaper -f <path_to_wallpaper>` to set the wallpaper directly.
-Use `caelestia wallpaper -h` for more info about this command.
+Set a wallpaper either by typing `>wallpaper` in the launcher, or directly:
+
+```sh
+caelestia wallpaper -f <path_to_wallpaper>
+caelestia wallpaper -h
+```
 
 ## Updating
 
-### Packaged install (AUR)
+This fork is deployed by `nix-config` from `github:ponkcore/shell/main`, so
+"updating" means push the branch and rebuild the system — see
+[Deploying](#deploying). There is no AUR package and no manual install path for
+this fork.
 
-If using the full dotfiles or the CLI, run `caelestia update` to perform a full system update and
-update the dots.
-Otherwise, if you installed the shell on its own, update your system using your AUR helper (e.g., `paru`).
-
-### Manual install
-
-If you installed the shell manually by cloning the repo, you can update by pulling the changes from git
-in the local checkout.
-
-For example, if you installed to `$XDG_CONFIG_HOME/quickshell/caelestia`:
-
-```sh
-cd $XDG_CONFIG_HOME/quickshell/caelestia
-git pull
-```
+To pull in upstream work, see [Syncing with upstream](#syncing-with-upstream).
 
 ## Configuring
 
@@ -822,7 +803,17 @@ Per-monitor token overrides are also available at
 
 ### Home Manager Module
 
-For NixOS users, a Home Manager module is also available.
+The fork ships a Home Manager module at `nix/hm-module.nix`, exposed as
+`caelestia-shell.homeManagerModules.default`. This is how the shell is deployed
+on this host.
+
+> [!IMPORTANT]
+> Do **not** populate the `settings` attrset. HM `settings` writes
+> `~/.config/caelestia/shell.json` as a read-only Nix store symlink via
+> `xdg.configFile`, which stops the shell from persisting runtime state
+> (wallpaper changes, bar toggles, scheme selection). Keep `settings = {}` and
+> write the config as a real writable file from `home.activation` instead —
+> that is what `nix-config` does.
 
 <details><summary><code>home.nix</code></summary>
 
@@ -852,33 +843,38 @@ programs.caelestia = {
 };
 ```
 
-The module automatically adds the shell to the path with **full functionality**. The CLI is not required; however, you can enable and configure it.
+The module adds the shell to the path with **full functionality** when the
+package is the `with-cli` override. The CLI is optional, but wallpaper, scheme
+and IPC features need it.
 
 </details>
 
 ## FAQ
 
-### Need help or support?
+### Where do I get help?
 
-You can join the Caelestia Discord server for assistance and discussion [here][discord].
+Upstream issues and the
+[Caelestia Discord](https://caelestiashell.com/discord) cover stock shell
+behaviour. For anything specific to this fork — the Lecoo power bridge,
+CloakBrowser profile picker, launch-detach behaviour, removed VPN/GameMode
+services — file an issue on [`ponkcore/shell`](https://github.com/ponkcore/shell/issues)
+instead, so it does not land on the upstream maintainers.
 
-### I want to make my own changes to the Hyprland config!
+### I want to change the Hyprland config
 
-Check out the configuring section on the [dots repo](https://github.com/caelestia-dots/caelestia#configuring).
+Hyprland is owned by `nix-config`, not by this repo. Session, keybinds and
+compositor settings live under `/etc/nixos`.
 
-### I want to make my own changes to other stuff!
+### I want to disable a feature
 
-See the [manual installation](#manual-installation) section for the corresponding repo.
-
-### I want to disable ___ feature!
-
-Please read the [configuring](#configuring) section.
-If there is no corresponding option, make a [feature request](https://github.com/caelestia-dots/shell/issues/new?template=feature.yml).
+Read the [Configuring](#configuring) section. If there is no corresponding
+option, open a [feature request](https://github.com/ponkcore/shell/issues/new).
 
 ### How do I make my colour scheme change to match my wallpaper?
 
-Set a wallpaper via `>wallpaper` in the launcher or `caelestia wallpaper`, and set the scheme to the dynamic scheme via
-`>scheme` in the launcher or `caelestia scheme set`, e.g.:
+Set a wallpaper via `>wallpaper` in the launcher or `caelestia wallpaper`, and
+set the scheme to the dynamic scheme via `>scheme` in the launcher or
+`caelestia scheme set`:
 
 ```sh
 caelestia wallpaper -f <path_to_wallpaper>
@@ -887,34 +883,37 @@ caelestia scheme set -n dynamic
 
 ### My wallpapers aren't showing up in the launcher!
 
-The launcher pulls wallpapers from `~/Pictures/Wallpapers` by default. You can change this in the config. Additionally,
-the launcher only shows an odd number of wallpapers at one time. If you only have 2 wallpapers, consider getting more
-(or just putting one).
+The launcher pulls wallpapers from `~/Pictures/Wallpapers` by default; change
+that in the config. It also only shows an odd number of wallpapers at a time,
+so with exactly 2 it may look empty.
+
+## Known issues
+
+Tracked in this repo, not upstream:
+
+- **Dropdown menus are not clickable in some positions.** `Menu.qml` popups
+  escape the SplitButton `Row` positioner and lose input in the utilities
+  drawer (record mode selector). A chain of fix attempts was rolled back in
+  `0e1ce334`; the bug is open again. See
+  [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ## Credits
 
-Thanks to the Hyprland Discord community (especially the homies in #rice-discussion) for all the help and suggestions
-for improving these dots!
+This fork builds on [`caelestia-dots/shell`](https://github.com/caelestia-dots/shell)
+by [@soramanew](https://github.com/soramanew), which is where nearly all of the
+design and most of the code come from.
 
-A special thanks to [@outfoxxed](https://github.com/outfoxxed) for making Quickshell and the effort put into fixing issues
-and implementing various feature requests.
+Upstream's own acknowledgements, retained:
 
-Another special thanks to [@end_4](https://github.com/end-4) for his [config](https://github.com/end-4/dots-hyprland)
-which helped me a lot with learning how to use Quickshell.
+Thanks to the Hyprland Discord community (especially #rice-discussion) for the
+help and suggestions that shaped these dots.
 
-Finally, another thank you to all the configs I took inspiration from (only one for now):
+A special thanks to [@outfoxxed](https://github.com/outfoxxed) for making
+Quickshell and for the effort put into fixing issues and implementing feature
+requests.
 
--   [Axenide/Ax-Shell](https://github.com/Axenide/Ax-Shell)
+Another special thanks to [@end_4](https://github.com/end-4) for his
+[config](https://github.com/end-4/dots-hyprland), which helped a lot with
+learning how to use Quickshell.
 
-## Stonks 📈
-
-<a href="https://www.star-history.com/#caelestia-dots/shell&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=caelestia-dots/shell&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=caelestia-dots/shell&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=caelestia-dots/shell&type=Date" />
- </picture>
-</a>
-
-[dots-repo]: https://github.com/caelestia-dots/caelestia
-[discord]: https://caelestiashell.com/discord
+And to [Axenide/Ax-Shell](https://github.com/Axenide/Ax-Shell) for inspiration.
