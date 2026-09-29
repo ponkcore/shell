@@ -1,12 +1,15 @@
 # Storage: used vs available, and the ext4 root reserve
 
-**Status: fixed.** This document is the analysis behind the fix; it is kept
-because the trap is easy to walk back into.
+**Status: fixed in `8e2b9e1d`.** This document is the analysis behind the fix;
+it is kept because the trap is easy to walk back into.
 
 The shipped fix stores `availBytes` alongside `usedBytes` in `DiskInfo`,
 computes `used = bytesTotal() - bytesFree()`, reports `free()` as the stored
 available value rather than deriving it, and uses df's `used / (used + avail)`
-for both `DiskInfo::perc()` and `Storage::percentage()`.
+ratio for both `DiskInfo::perc()` and `Storage::percentage()`. Note that `perc()`
+returns the raw ratio while `df` ceils its integer, so the shell can read one
+point below `df` (20% vs 21% here) — a rounding convention difference, not a
+disagreement about the underlying bytes. Both are documented in the source.
 
 One claim below was wrong and is corrected here: it warns that fixing `used`
 regresses `free`, because `free` was "the one correct value in the chain".
@@ -237,7 +240,7 @@ verified on this host that `f_bfree == f_bavail` there exactly
 (diff = 0.00 GiB), so `used` and `free` for that volume must be
 byte-identical before and after the fix.
 
-## Notes for whoever implements this
+## Maintenance notes
 
 - Do not fix this by subtracting a hardcoded 5%. The reserve is
   configurable (`tune2fs -m`) and differs per filesystem; it can also be
