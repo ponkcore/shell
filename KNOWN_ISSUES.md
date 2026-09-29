@@ -44,3 +44,22 @@ parse error. All four files were rolled back byte-identical to `b34bf280` in
 - The shell runs on Hyprland via layer-shell; popup input goes through the
   compositor, so "clickable outside panel" interacts with `Regions.qml` input
   region accounting — that coupling is where the previous attempts broke.
+
+### Collateral loss: the recorder button semantics fix
+
+`0e1ce334` reverted the whole chain, including `42bb3ea0`
+("recorder menu selects the mode, main button starts recording") — which was
+**not** part of the broken menu plumbing. It only changed `Record.qml`:
+the four `MenuItem`s each had their own `onClicked: Recorder.start([...])`, so
+picking a mode started a recording immediately. That fix moved the start to the
+`SplitButton`'s `stateLayer.onClicked` with args derived from the active item,
+matching how every other `SplitButton` in the tree behaves.
+
+So symptom 3 above is a separate, already-solved bug that got rolled back as
+collateral, not another facet of the input problem.
+
+It re-applies cleanly: `git cherry-pick 42bb3ea0` onto current `main` applies
+without conflict and leaves `qmlformat` and `qml-lint-conventions.py` passing.
+It was deliberately **not** re-landed here because it is a behaviour change and
+needs a decision on its own — but it is independent of the menu fix and can be
+cherry-picked without waiting for that.
